@@ -1,101 +1,56 @@
-import { useState } from 'react';
-import { useT, useLang } from '../LanguageContext';
-import { useLocalState } from '../utils/useLocalState';
+import { useLang } from '../LanguageContext';
 
 const CARDS = [
   {
-    id: 'platinum',
-    name: 'Platinum Card®',
-    annual_fee: '$695/yr',
-    bonus: '80,000 pts after $8K spend in 6 mo',
-    bonus_value: '~$800',
-    color: '#8d9097',
-    perks_en: [
-      '$200 airline fee credit annually',
-      '$200 hotel credit (Fine Hotels + Resorts)',
-      '$240 digital entertainment credit',
-      'Centurion Lounge + Priority Pass access',
-      '5x pts on flights & prepaid hotels (Amex Travel)',
-      'Global Entry / TSA PreCheck fee credit',
-      '$189 CLEAR® Plus credit',
-    ],
-    perks_es: [
-      'Crédito de $200 en tarifas de aerolíneas anualmente',
-      'Crédito de $200 en hoteles (Fine Hotels + Resorts)',
-      'Crédito de $240 en entretenimiento digital',
-      'Acceso a Centurion Lounge + Priority Pass',
-      '5x puntos en vuelos y hoteles prepagados (Amex Travel)',
-      'Crédito para Global Entry / TSA PreCheck',
-      'Crédito de $189 en CLEAR® Plus',
-    ],
-    best_for_en: 'Frequent travelers who use lounge access',
-    best_for_es: 'Viajeros frecuentes que aprovechan el acceso a salas VIP',
-    referral_en: 'Refer a friend and earn up to 55,000 bonus points.',
-    referral_es: 'Recomienda un amigo y gana hasta 55,000 puntos de bonificación.',
-  },
-  {
-    id: 'gold',
-    name: 'Gold Card®',
-    annual_fee: '$325/yr',
-    bonus: '60,000 pts after $6K spend in 6 mo',
+    id: 'amex-gold',
+    name_en: 'Gold Card®',
+    name_es: 'Tarjeta Gold®',
+    issuer: 'American Express',
+    issuerShort: 'AMEX',
+    network: 'AMEX',
+    color1: '#B8860B',
+    color2: '#7a4f0a',
+    textColor: '#fff',
+    annual_fee_en: '$325/yr',
+    annual_fee_es: '$325/año',
+    bonus_en: '60,000 pts after $6K spend in 6 mo',
+    bonus_es: '60,000 pts tras $6K en gasto en 6 meses',
     bonus_value: '~$600',
-    color: '#c8a951',
     perks_en: [
       '4x pts at restaurants worldwide',
       '4x pts at U.S. supermarkets (up to $25K/yr)',
-      '3x pts on flights booked direct or via Amex',
-      '$120 dining credit (Grubhub, Cheesecake Factory, etc.)',
+      '3x pts on flights (direct or Amex Travel)',
+      '$120 dining credit (Grubhub, Cheesecake Factory)',
       '$120 Uber Cash annually',
       'No foreign transaction fees',
     ],
     perks_es: [
       '4x puntos en restaurantes en todo el mundo',
       '4x puntos en supermercados de EE. UU. (hasta $25K/año)',
-      '3x puntos en vuelos reservados directo o vía Amex',
-      'Crédito de $120 en restaurantes (Grubhub, Cheesecake Factory, etc.)',
+      '3x puntos en vuelos (directo o Amex Travel)',
+      'Crédito de $120 en restaurantes (Grubhub, etc.)',
       '$120 en Uber Cash al año',
       'Sin comisiones por transacciones en el extranjero',
     ],
-    best_for_en: 'Foodies who dine out & order delivery often',
-    best_for_es: 'Amantes de la gastronomía que comen fuera o piden a domicilio frecuentemente',
-    referral_en: 'Refer a friend and earn up to 30,000 bonus points.',
-    referral_es: 'Recomienda un amigo y gana hasta 30,000 puntos de bonificación.',
+    best_en: 'Foodies who dine out & order delivery often',
+    best_es: 'Amantes de la gastronomía que comen fuera con frecuencia',
+    url: 'https://americanexpress.com/en-us/referral/gold-card?ref=RYANPmhRc&XLINK=MYCP',
   },
   {
-    id: 'green',
-    name: 'Green Card®',
-    annual_fee: '$150/yr',
-    bonus: '40,000 pts after $3K spend in 6 mo',
-    bonus_value: '~$400',
-    color: '#4a7c59',
-    perks_en: [
-      '3x pts on travel (transit, hotels, flights)',
-      '3x pts at restaurants',
-      '1x on all other purchases',
-      '$189 CLEAR® Plus credit',
-      '$100 LoungeBuddy credit',
-      'No foreign transaction fees',
-    ],
-    perks_es: [
-      '3x puntos en viajes (transporte, hoteles, vuelos)',
-      '3x puntos en restaurantes',
-      '1x en todas las demás compras',
-      'Crédito de $189 en CLEAR® Plus',
-      'Crédito de $100 en LoungeBuddy',
-      'Sin comisiones por transacciones en el extranjero',
-    ],
-    best_for_en: 'Commuters and occasional travelers',
-    best_for_es: 'Viajeros de commute y turistas ocasionales',
-    referral_en: 'Refer a friend and earn up to 10,000 bonus points.',
-    referral_es: 'Recomienda un amigo y gana hasta 10,000 puntos de bonificación.',
-  },
-  {
-    id: 'bce',
-    name: 'Blue Cash Everyday®',
-    annual_fee: 'No annual fee',
-    bonus: '$200 statement credit after $2K spend in 6 mo',
+    id: 'amex-bce',
+    name_en: 'Blue Cash Everyday®',
+    name_es: 'Blue Cash Everyday®',
+    issuer: 'American Express',
+    issuerShort: 'AMEX',
+    network: 'AMEX',
+    color1: '#1a6fa8',
+    color2: '#0d3d6b',
+    textColor: '#fff',
+    annual_fee_en: 'No annual fee',
+    annual_fee_es: 'Sin cuota anual',
+    bonus_en: '$200 statement credit after $2K spend in 6 mo',
+    bonus_es: '$200 de crédito tras $2K en gasto en 6 meses',
     bonus_value: '$200',
-    color: '#2e86c1',
     perks_en: [
       '3% cash back at U.S. supermarkets (up to $6K/yr)',
       '3% cash back on U.S. online retail purchases',
@@ -112,182 +67,289 @@ const CARDS = [
       'Crédito de $84 en Disney Bundle',
       'Sin cuota anual',
     ],
-    best_for_en: 'Everyday spenders who want simple cash back',
-    best_for_es: 'Personas que buscan reembolso sencillo en compras diarias',
-    referral_en: 'Refer a friend and earn $100 statement credit.',
-    referral_es: 'Recomienda un amigo y gana $100 de crédito en estado de cuenta.',
+    best_en: 'Everyday spenders who want simple cash back',
+    best_es: 'Personas que buscan reembolso sencillo en compras diarias',
+    url: 'https://americanexpress.com/en-us/referral/blue-cash-everyday-credit-card?ref=RYANP4Duo&XLINK=MYCP',
   },
   {
-    id: 'bcp',
-    name: 'Blue Cash Preferred®',
-    annual_fee: '$95/yr (waived yr 1)',
-    bonus: '$250 statement credit after $3K spend in 6 mo',
-    bonus_value: '$250',
-    color: '#1a5276',
+    id: 'amex-bbp',
+    name_en: 'Blue Business Plus®',
+    name_es: 'Blue Business Plus®',
+    issuer: 'American Express',
+    issuerShort: 'AMEX',
+    network: 'AMEX',
+    color1: '#1a5276',
+    color2: '#0a2342',
+    textColor: '#fff',
+    annual_fee_en: 'No annual fee',
+    annual_fee_es: 'Sin cuota anual',
+    bonus_en: '15,000 pts after $3K spend in 3 mo',
+    bonus_es: '15,000 pts tras $3K en gasto en 3 meses',
+    bonus_value: '~$150',
     perks_en: [
-      '6% cash back at U.S. supermarkets (up to $6K/yr)',
-      '6% cash back on select U.S. streaming services',
-      '3% cash back at U.S. gas stations',
-      '3% cash back on transit',
-      '$84 Disney Bundle credit',
-      '1% on all other purchases',
-    ],
-    perks_es: [
-      '6% reembolso en supermercados de EE. UU. (hasta $6K/año)',
-      '6% reembolso en servicios de streaming de EE. UU.',
-      '3% reembolso en gasolineras de EE. UU.',
-      '3% reembolso en transporte público',
-      'Crédito de $84 en Disney Bundle',
-      '1% en todas las demás compras',
-    ],
-    best_for_en: 'Families with high grocery & streaming spend',
-    best_for_es: 'Familias con alto gasto en supermercados y streaming',
-    referral_en: 'Refer a friend and earn $100 statement credit.',
-    referral_es: 'Recomienda un amigo y gana $100 de crédito en estado de cuenta.',
-  },
-  {
-    id: 'hilton',
-    name: 'Hilton Honors Surpass®',
-    annual_fee: '$150/yr',
-    bonus: '130,000 Hilton pts after $3K spend in 6 mo',
-    bonus_value: '~$780 (Hilton pts)',
-    color: '#00205b',
-    perks_en: [
-      '12x pts at Hilton properties',
-      '6x pts at U.S. restaurants, supermarkets & gas',
-      'Hilton Honors Gold status automatically',
-      'Free weekend night after $15K spend',
-      '$50 quarterly dining credit',
+      '2x pts on all purchases (up to $50K/yr)',
+      '1x pts on purchases above $50K',
+      'No annual fee',
+      'Employee cards at no extra cost',
+      'Expense management tools',
       'No foreign transaction fees',
     ],
     perks_es: [
-      '12x puntos en propiedades Hilton',
-      '6x puntos en restaurantes, supermercados y gasolineras de EE. UU.',
-      'Estatus Hilton Honors Gold automáticamente',
-      'Noche de fin de semana gratis con $15K en gastos',
-      'Crédito trimestral de $50 en restaurantes',
+      '2x puntos en todas las compras (hasta $50K/año)',
+      '1x puntos en compras superiores a $50K',
+      'Sin cuota anual',
+      'Tarjetas para empleados sin costo adicional',
+      'Herramientas de gestión de gastos',
       'Sin comisiones por transacciones en el extranjero',
     ],
-    best_for_en: 'Hilton loyalists who travel regularly',
-    best_for_es: 'Fieles a Hilton que viajan con regularidad',
-    referral_en: 'Refer a friend and earn 20,000 Hilton Honors points.',
-    referral_es: 'Recomienda un amigo y gana 20,000 puntos Hilton Honors.',
+    best_en: 'Small business owners who want simple flat-rate rewards',
+    best_es: 'Dueños de pequeñas empresas que buscan recompensas simples',
+    url: 'https://americanexpress.com/en-us/referral/bluebusinessplus-credit-card?ref=RYANPhnor&XLINK=MYCP',
+  },
+  {
+    id: 'discover-student',
+    name_en: 'Discover it® Student',
+    name_es: 'Discover it® Estudiante',
+    issuer: 'Discover',
+    issuerShort: 'DISCOVER',
+    network: 'DISC',
+    color1: '#E86400',
+    color2: '#B34A00',
+    textColor: '#fff',
+    annual_fee_en: 'No annual fee',
+    annual_fee_es: 'Sin cuota anual',
+    bonus_en: 'Cashback Match™ — all cash back doubled at end of year 1',
+    bonus_es: 'Cashback Match™ — todo el reembolso se duplica al final del año 1',
+    bonus_value: '2× yr 1',
+    perks_en: [
+      '5% cash back on rotating quarterly categories',
+      '1% cash back on all other purchases',
+      'Cashback Match™ doubles all rewards year 1',
+      'No credit score required to apply',
+      'No annual fee, no late fee on first missed payment',
+      'Free FICO® Credit Score monitoring',
+    ],
+    perks_es: [
+      '5% reembolso en categorías rotativas cada trimestre',
+      '1% reembolso en todas las demás compras',
+      'Cashback Match™ duplica todas las recompensas el año 1',
+      'No se requiere historial crediticio para aplicar',
+      'Sin cuota anual, sin cargo por primer pago tardío',
+      'Monitoreo gratuito de puntuación crediticia FICO®',
+    ],
+    best_en: 'College students building credit for the first time',
+    best_es: 'Estudiantes universitarios construyendo su historial crediticio',
+    url: 'https://www.discovercard.com/application/website/apply?srcCde=RJWW&extole_zone_shareable_code=rjpohlman034&extole_share_channel=EXTOLE_EMAIL&extole_zone_name=blank&extole_zone_click_event_id=7645805379395169374&srcCde=RJWW&cmpgnid=raf-dca-consumer-it&scmpgnid=7595607159513222530_7645798708708575489&iq_id=yraf_1508309757_em_74_325577787659&extole_shareable_code=rjpohlman034&source=RAF',
+  },
+  {
+    id: 'chime',
+    name_en: 'Chime',
+    name_es: 'Chime',
+    issuer: 'Chime',
+    issuerShort: 'CHIME',
+    network: 'VISA',
+    color1: '#00A86B',
+    color2: '#005A36',
+    textColor: '#fff',
+    annual_fee_en: 'No monthly fees',
+    annual_fee_es: 'Sin cuotas mensuales',
+    bonus_en: '$100 bonus when you receive $200+ direct deposit',
+    bonus_es: '$100 de bono al recibir $200+ en depósito directo',
+    bonus_value: '$100',
+    perks_en: [
+      'No monthly fees, no minimum balance',
+      'Get paid up to 2 days early with direct deposit',
+      'SpotMe® — fee-free overdraft up to $200',
+      '60,000+ fee-free ATMs',
+      'Automatic savings round-ups',
+      'Credit Builder secured card available',
+    ],
+    perks_es: [
+      'Sin cuotas mensuales ni saldo mínimo',
+      'Recibe tu pago hasta 2 días antes con depósito directo',
+      'SpotMe® — sobregiro sin comisión hasta $200',
+      'Más de 60,000 cajeros automáticos sin comisión',
+      'Ahorro automático con redondeo de compras',
+      'Tarjeta Credit Builder asegurada disponible',
+    ],
+    best_en: 'Anyone who wants fee-free banking with early pay',
+    best_es: 'Cualquiera que quiera banco sin comisiones y pago anticipado',
+    url: 'https://www.chime.com/r/roxielyslopez/?c=s',
+  },
+  {
+    id: 'bofa-cash',
+    name_en: 'Customized Cash Rewards',
+    name_es: 'Recompensas en Efectivo',
+    issuer: 'Bank of America',
+    issuerShort: 'BOFA',
+    network: 'VISA',
+    color1: '#C8001F',
+    color2: '#7a0012',
+    textColor: '#fff',
+    annual_fee_en: 'No annual fee',
+    annual_fee_es: 'Sin cuota anual',
+    bonus_en: '$200 statement credit after $1K spend in 90 days',
+    bonus_es: '$200 de crédito tras $1K en gasto en 90 días',
+    bonus_value: '$200',
+    perks_en: [
+      '3% cash back in your choice category',
+      '2% cash back at grocery stores & wholesale clubs',
+      '1% cash back on all other purchases',
+      'Choose your 3% category each month',
+      'No annual fee',
+      'Preferred Rewards members earn more',
+    ],
+    perks_es: [
+      '3% reembolso en la categoría que elijas',
+      '2% reembolso en supermercados y clubes de mayoreo',
+      '1% reembolso en todas las demás compras',
+      'Cambia tu categoría del 3% cada mes',
+      'Sin cuota anual',
+      'Los miembros Preferred Rewards ganan más',
+    ],
+    best_en: 'Flexible spenders who want to maximize a custom category',
+    best_es: 'Quienes buscan maximizar recompensas en una categoría a su elección',
+    url: 'https://www.bankofamerica.com/refer?prod=ccr&refid=G3B3XPVO-CCCR01',
+  },
+  {
+    id: 'capital-one-savor',
+    name_en: 'Savor Rewards',
+    name_es: 'Savor Rewards',
+    issuer: 'Capital One',
+    issuerShort: 'CAP1',
+    network: 'MC',
+    color1: '#004977',
+    color2: '#002440',
+    textColor: '#fff',
+    annual_fee_en: 'No annual fee',
+    annual_fee_es: 'Sin cuota anual',
+    bonus_en: '$200 cash bonus after $500 spend in 3 mo',
+    bonus_es: '$200 de bono en efectivo tras $500 en gasto en 3 meses',
+    bonus_value: '$200',
+    perks_en: [
+      '3% cash back at grocery stores',
+      '3% cash back on dining & entertainment',
+      '3% cash back on popular streaming services',
+      '1% on all other purchases',
+      'No annual fee',
+      'No foreign transaction fees',
+    ],
+    perks_es: [
+      '3% reembolso en supermercados',
+      '3% reembolso en restaurantes y entretenimiento',
+      '3% reembolso en servicios de streaming populares',
+      '1% en todas las demás compras',
+      'Sin cuota anual',
+      'Sin comisiones por transacciones en el extranjero',
+    ],
+    best_en: 'Everyday spenders who love food, fun & streaming',
+    best_es: 'Quienes disfrutan comida, entretenimiento y streaming',
+    url: 'https://i.capitalone.com/J4Esp4Bjp',
   },
 ];
 
+const NETWORK_LABELS = { AMEX: 'AMEX', VISA: 'VISA', MC: 'MC', DISC: 'Discover' };
+
 export default function AmexReferral() {
-  const t    = useT();
   const lang = useLang();
-  const [referralLink, setReferralLink] = useLocalState('amex-link', '');
-  const [copied,       setCopied]       = useState(false);
+  const isEs = lang === 'es';
 
-  function copyLink() {
-    if (!referralLink) return;
-    navigator.clipboard.writeText(referralLink).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
-
-  const isValidUrl = referralLink && (() => {
-    try { new URL(referralLink); return true; } catch { return false; }
-  })();
+  const pageSub    = isEs
+    ? 'Aplica a través de estos enlaces de referencia y ayuda a alguien a ganar un bono.'
+    : 'Apply through these referral links and help someone earn a bonus.';
+  const applyNow   = isEs ? 'Aplicar Ahora' : 'Apply Now';
+  const annualFee  = isEs ? 'Cuota Anual' : 'Annual Fee';
+  const bonusLabel = isEs ? 'Bono de Bienvenida' : 'Welcome Bonus';
+  const bonusVal   = isEs ? 'Valor' : 'Value';
+  const bestFor    = isEs ? 'Ideal para' : 'Best For';
+  const perksLabel = isEs ? 'Beneficios' : 'Key Benefits';
 
   return (
     <div>
-      <div className="amex-hero">
-        <div className="amex-badge">{t('amex.badge')}</div>
-        <h2>{t('amex.heroTitle')}</h2>
-        <p>{t('amex.heroBody')}</p>
-      </div>
+      <p className="page-sub">{pageSub}</p>
 
-      <div className="card" style={{marginBottom:'1.5rem'}}>
-        <div className="card-title"><span className="icon">🔗</span> {t('amex.yourLink')}</div>
-        <p style={{fontSize:'.88rem', color:'var(--muted)', marginBottom:'1rem'}}>{t('amex.linkDesc')}</p>
-        <div style={{display:'flex', gap:'.75rem', alignItems:'center', flexWrap:'wrap'}}>
-          <input
-            type="url"
-            placeholder={t('amex.linkPlaceholder')}
-            value={referralLink}
-            onChange={e => setReferralLink(e.target.value)}
-            style={{
-              flex:1, minWidth:260, padding:'.65rem 1rem',
-              border:`1.5px solid ${referralLink && !isValidUrl ? 'var(--danger)' : 'var(--border)'}`,
-              borderRadius:8, fontSize:'.9rem',
-            }}
-          />
-          <button className="btn btn-primary" onClick={copyLink} disabled={!isValidUrl}>
-            {copied ? t('amex.copiedBtn') : t('amex.copyBtn')}
-          </button>
-        </div>
-        {referralLink && !isValidUrl && (
-          <p style={{fontSize:'.78rem', color:'var(--danger)', marginTop:'.4rem'}}>Please enter a valid URL.</p>
-        )}
-        <p style={{fontSize:'.78rem', color:'var(--muted)', marginTop:'.6rem'}}>{t('amex.linkTip')}</p>
-      </div>
-
-      <h3 style={{color:'var(--navy)', fontWeight:700, marginBottom:'.5rem', fontSize:'1.1rem'}}>{t('amex.cardsTitle')}</h3>
-      <p style={{fontSize:'.88rem', color:'var(--muted)', marginBottom:'1.25rem'}}>{t('amex.cardsSub')}</p>
-
-      <div className="card-grid">
+      <div className="ref-cards-grid">
         {CARDS.map(card => {
-          const isEs   = lang === 'es';
-          const perks   = isEs ? card.perks_es   : card.perks_en;
-          const bestFor = isEs ? card.best_for_es : card.best_for_en;
-          const refNote = isEs ? card.referral_es : card.referral_en;
+          const name     = isEs ? card.name_es     : card.name_en;
+          const fee      = isEs ? card.annual_fee_es : card.annual_fee_en;
+          const bonus    = isEs ? card.bonus_es     : card.bonus_en;
+          const perks    = isEs ? card.perks_es     : card.perks_en;
+          const best     = isEs ? card.best_es      : card.best_en;
+          const netLabel = NETWORK_LABELS[card.network] || card.network;
 
           return (
-            <div key={card.id} className="amex-card">
-              <div className="amex-card-header">
-                <div>
-                  <div className="amex-card-name" style={{color: card.color}}>{card.name}</div>
-                  <div className="amex-card-fee">{card.annual_fee}</div>
-                </div>
-                <div className="amex-card-bonus">
-                  <div>{t('amex.welcomeOffer')}</div>
-                  <div style={{fontSize:'.9rem', marginTop:'.15rem'}}>{card.bonus_value}</div>
-                </div>
-              </div>
-
-              <div style={{fontSize:'.82rem', color:'var(--muted)', background:'var(--light)', borderRadius:6, padding:'.5rem .75rem'}}>
-                <strong>{t('amex.welcomeBonus')}</strong> {card.bonus}
-              </div>
-
-              <ul className="amex-card-perks">
-                {perks.map((p, i) => <li key={i}>{p}</li>)}
-              </ul>
-
-              <div style={{fontSize:'.8rem', background:'#eaf4fb', color:'var(--blue)', borderRadius:6, padding:'.45rem .75rem'}}>
-                <strong>{t('amex.bestFor')}</strong> {bestFor}
-              </div>
-
-              <div style={{fontSize:'.8rem', background:'#fff8e1', color:'#7d5a00', borderRadius:6, padding:'.45rem .75rem'}}>
-                💛 {refNote}
-              </div>
-
+            <div key={card.id} className="bc">
+              {/* Header */}
               <div
-                className="amex-card-cta"
-                onClick={() => window.open('https://www.americanexpress.com/en-us/referral/', '_blank', 'noopener,noreferrer')}
+                className="bc-header"
+                style={{ background: `linear-gradient(145deg, ${card.color1}, ${card.color2})` }}
               >
-                <span>{t('amex.getLink')}</span>
-                <span style={{fontSize:'.75rem', color:'var(--muted)'}}>amex.com</span>
+                <div className="bc-top-row">
+                  <span className="bc-issuer-label" style={{ color: card.textColor, opacity: .75 }}>
+                    {card.issuerShort}
+                  </span>
+                  <span className="bc-network-pill">{netLabel}</span>
+                </div>
+
+                <div className="bc-card-mock" style={{ background: `linear-gradient(135deg, ${card.color1}cc, ${card.color2})` }}>
+                  <div className="bc-chip" />
+                  <div className="bc-card-dots">•••• •••• •••• ••••</div>
+                  <div className="bc-card-brand" style={{ color: card.textColor, opacity: .85 }}>{card.issuerShort}</div>
+                  <div className="bc-card-net">{netLabel}</div>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="bc-body">
+                <div className="bc-issuer-small">{card.issuer}</div>
+                <div className="bc-name">{name}</div>
+
+                <div className="bc-stats">
+                  <div className="bc-stat-box">
+                    <div className="bc-stat-lbl">{annualFee}</div>
+                    <div className="bc-stat-val">{fee}</div>
+                  </div>
+                  <div className="bc-stat-box">
+                    <div className="bc-stat-lbl">{bonusVal}</div>
+                    <div className="bc-stat-val" style={{ color: 'var(--success)' }}>{card.bonus_value}</div>
+                  </div>
+                </div>
+
+                <div className="bc-bonus">
+                  <div className="bc-bonus-lbl">{bonusLabel}</div>
+                  <div className="bc-bonus-txt">{bonus}</div>
+                </div>
+
+                <div style={{ fontSize: '.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: 'var(--muted)', marginBottom: '.4rem' }}>
+                  {perksLabel}
+                </div>
+                <ul className="bc-perks">
+                  {perks.map((p, i) => (
+                    <li key={i} className="bc-perk">
+                      <span className="bc-perk-check">✓</span>
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="bc-best">
+                  <div className="bc-best-lbl">{bestFor}</div>
+                  <div className="bc-best-val">{best}</div>
+                </div>
+
+                <a
+                  className="bc-apply"
+                  href={card.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ background: card.color1 }}
+                >
+                  {applyNow} →
+                </a>
               </div>
             </div>
           );
         })}
-      </div>
-
-      <div className="card" style={{marginTop:'1.5rem', background:'var(--light)'}}>
-        <div className="card-title"><span className="icon">💡</span> {t('amex.tipsTitle').replace('💡 ','')}</div>
-        <div className="three-col" style={{gap:'1rem'}}>
-          {t('amex.tips').map((tip, i) => (
-            <div key={i} style={{padding:'1rem', background:'var(--white)', borderRadius:8, border:'1px solid var(--border)'}}>
-              <div style={{fontSize:'1.5rem', marginBottom:'.4rem'}}>{tip.icon}</div>
-              <div style={{fontWeight:700, fontSize:'.9rem', color:'var(--navy)', marginBottom:'.3rem'}}>{tip.title}</div>
-              <div style={{fontSize:'.83rem', color:'var(--muted)'}}>{tip.desc}</div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
