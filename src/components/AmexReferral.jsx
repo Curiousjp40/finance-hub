@@ -34,8 +34,8 @@ const CARDS = [
     ],
     best_en: 'Foodies who dine out & order delivery often',
     best_es: 'Amantes de la gastronomía que comen fuera con frecuencia',
-    note_en: 'I use this for all dining and groceries — the 4x points add up fast and I earned enough for a free flight within months.',
-    note_es: 'La uso para todas mis comidas y supermercados — los puntos 4x se acumulan rápido y gané suficiente para un vuelo gratis en meses.',
+    note_en: 'We use this card for all our restaurants and grocery stores. The 4x points add up fast and it\'s our go-to for everyday spending where we eat and shop most.',
+    note_es: 'Usamos esta tarjeta para todos nuestros restaurantes y supermercados. Los puntos 4x se acumulan rápido y es nuestra favorita para los gastos donde más comemos y compramos.',
     url: 'https://americanexpress.com/en-us/referral/gold-card?ref=RYANPmhRc&XLINK=MYCP',
   },
   {
@@ -71,8 +71,8 @@ const CARDS = [
     ],
     best_en: 'Everyday spenders who want simple cash back',
     best_es: 'Personas que buscan reembolso sencillo en compras diarias',
-    note_en: 'My wife uses this for everyday spending — the 3% cash back at supermarkets and gas stations saves us money every month.',
-    note_es: 'Mi esposa la usa para gastos cotidianos — el 3% en supermercados y gasolineras nos ahorra dinero cada mes.',
+    note_en: 'This is a great starting card if you don\'t want to pay an annual fee. You get 3% back at gas stations, 3% on groceries, and 3% on online purchases. Solid choice for anyone wanting simple cash back with no cost.',
+    note_es: 'Esta es una excelente tarjeta inicial si no quieres pagar cuota anual. Obtienes 3% de reembolso en gasolineras, 3% en supermercados y 3% en compras en línea. Una opción sólida para quienes buscan reembolso simple sin costo.',
     url: 'https://americanexpress.com/en-us/referral/blue-cash-everyday-credit-card?ref=RYANP4Duo&XLINK=MYCP',
   },
   {
@@ -108,8 +108,8 @@ const CARDS = [
     ],
     best_en: 'Small business owners who want simple flat-rate rewards',
     best_es: 'Dueños de pequeñas empresas que buscan recompensas simples',
-    note_en: 'I use this for all business expenses — the 2x points on everything with no annual fee makes it the best flat-rate business card.',
-    note_es: 'La uso para todos mis gastos de negocio — los 2x puntos en todo sin cuota anual la hace la mejor tarjeta empresarial.',
+    note_en: 'We use this for everything else — gas, bills, subscriptions, anything that doesn\'t earn bonus points on the Gold. You get 2% back on all purchases with no annual fee. You do NOT need a legitimate LLC to get this card — anyone can apply as a sole proprietor.',
+    note_es: 'La usamos para todo lo demás — gasolina, facturas, suscripciones, todo lo que no gana puntos extra en la Gold. Obtienes 2% de reembolso en todas las compras sin cuota anual. NO necesitas una LLC legítima para esta tarjeta — cualquiera puede aplicar como trabajador independiente.',
     url: 'https://americanexpress.com/en-us/referral/bluebusinessplus-credit-card?ref=RYANPhnor&XLINK=MYCP',
   },
   {
@@ -145,46 +145,9 @@ const CARDS = [
     ],
     best_en: 'College students building credit for the first time',
     best_es: 'Estudiantes universitarios construyendo su historial crediticio',
-    note_en: 'Great first card for anyone building credit — the cashback match at the end of year 1 doubles everything you earned.',
-    note_es: 'Excelente primera tarjeta para quienes construyen crédito — el Cashback Match al final del año 1 duplica todo lo ganado.',
+    note_en: 'Perfect card to build credit. Rotating quarterly categories like gas, Amazon, and restaurants earn 5% cash back. Great for students or anyone just starting out with no annual fee.',
+    note_es: 'Tarjeta perfecta para construir crédito. Las categorías rotativas trimestrales como gasolina, Amazon y restaurantes ganan 5% de reembolso. Ideal para estudiantes o cualquier persona que esté comenzando, sin cuota anual.',
     url: 'https://www.discovercard.com/application/website/apply?srcCde=RJWW&extole_zone_shareable_code=rjpohlman034&extole_share_channel=EXTOLE_EMAIL&extole_zone_name=blank&extole_zone_click_event_id=7645805379395169374&srcCde=RJWW&cmpgnid=raf-dca-consumer-it&scmpgnid=7595607159513222530_7645798708708575489&iq_id=yraf_1508309757_em_74_325577787659&extole_shareable_code=rjpohlman034&source=RAF',
-  },
-  {
-    id: 'chime',
-    name_en: 'Chime',
-    name_es: 'Chime',
-    issuer: 'Chime',
-    issuerShort: 'CHIME',
-    network: 'VISA',
-    color1: '#00A86B',
-    color2: '#005A36',
-    textColor: '#fff',
-    annual_fee_en: 'No monthly fees',
-    annual_fee_es: 'Sin cuotas mensuales',
-    bonus_en: '$100 bonus when you receive $200+ direct deposit',
-    bonus_es: '$100 de bono al recibir $200+ en depósito directo',
-    bonus_value: '$100',
-    perks_en: [
-      'No monthly fees, no minimum balance',
-      'Get paid up to 2 days early with direct deposit',
-      'SpotMe® — fee-free overdraft up to $200',
-      '60,000+ fee-free ATMs',
-      'Automatic savings round-ups',
-      'Credit Builder secured card available',
-    ],
-    perks_es: [
-      'Sin cuotas mensuales ni saldo mínimo',
-      'Recibe tu pago hasta 2 días antes con depósito directo',
-      'SpotMe® — sobregiro sin comisión hasta $200',
-      'Más de 60,000 cajeros automáticos sin comisión',
-      'Ahorro automático con redondeo de compras',
-      'Tarjeta Credit Builder asegurada disponible',
-    ],
-    best_en: 'Anyone who wants fee-free banking with early pay',
-    best_es: 'Cualquiera que quiera banco sin comisiones y pago anticipado',
-    note_en: 'My wife uses this for fee-free banking — getting paid 2 days early with direct deposit has been a game changer.',
-    note_es: 'Mi esposa usa esto para banca sin comisiones — recibir el pago 2 días antes con depósito directo ha cambiado todo.',
-    url: 'https://www.chime.com/r/roxielyslopez/?c=s',
   },
   {
     id: 'bofa-cash',
@@ -219,8 +182,8 @@ const CARDS = [
     ],
     best_en: 'Flexible spenders who want to maximize a custom category',
     best_es: 'Quienes buscan maximizar recompensas en una categoría a su elección',
-    note_en: 'My wife uses this for the 3% cash back in her chosen category — flexible and no annual fee.',
-    note_es: 'Mi esposa la usa por el 3% de reembolso en su categoría elegida — flexible y sin cuota anual.',
+    note_en: 'A solid no annual fee card great for anyone starting to build credit or wanting simple flexible cash back in a category of their choice.',
+    note_es: 'Una excelente tarjeta sin cuota anual, ideal para quienes están comenzando a construir crédito o quieren reembolso flexible y sencillo en la categoría de su elección.',
     url: 'https://www.bankofamerica.com/refer?prod=ccr&refid=G3B3XPVO-CCCR01',
   },
   {
@@ -256,11 +219,49 @@ const CARDS = [
     ],
     best_en: 'Everyday spenders who love food, fun & streaming',
     best_es: 'Quienes disfrutan comida, entretenimiento y streaming',
-    note_en: 'My wife uses this for dining and entertainment — the 3% cash back on restaurants and streaming pays for itself.',
-    note_es: 'Mi esposa la usa para restaurantes y entretenimiento — el 3% de reembolso se paga solo.',
+    note_en: 'Great no annual fee option for dining and entertainment lovers. 3% back on restaurants, groceries, and streaming with no annual fee makes it an easy card to hold.',
+    note_es: 'Excelente opción sin cuota anual para los amantes de la gastronomía y el entretenimiento. El 3% de reembolso en restaurantes, supermercados y streaming sin cuota anual la hace una tarjeta fácil de conservar.',
     url: 'https://i.capitalone.com/J4Esp4Bjp',
   },
 ];
+
+const CHIME = {
+  id: 'chime',
+  name_en: 'Chime',
+  name_es: 'Chime',
+  issuer: 'Chime',
+  issuerShort: 'CHIME',
+  network: 'VISA',
+  color1: '#00A86B',
+  color2: '#005A36',
+  textColor: '#fff',
+  annual_fee_en: 'No monthly fees',
+  annual_fee_es: 'Sin cuotas mensuales',
+  bonus_en: '$100 bonus when you receive $200+ direct deposit',
+  bonus_es: '$100 de bono al recibir $200+ en depósito directo',
+  bonus_value: '$100',
+  perks_en: [
+    'No monthly fees, no minimum balance',
+    'Get paid up to 2 days early with direct deposit',
+    'SpotMe® — fee-free overdraft up to $200',
+    '60,000+ fee-free ATMs',
+    'Automatic savings round-ups',
+    'Credit Builder secured card available',
+  ],
+  perks_es: [
+    'Sin cuotas mensuales ni saldo mínimo',
+    'Recibe tu pago hasta 2 días antes con depósito directo',
+    'SpotMe® — sobregiro sin comisión hasta $200',
+    'Más de 60,000 cajeros automáticos sin comisión',
+    'Ahorro automático con redondeo de compras',
+    'Tarjeta Credit Builder asegurada disponible',
+  ],
+  best_en: 'Anyone who wants fee-free banking with early pay',
+  best_es: 'Cualquiera que quiera banco sin comisiones y pago anticipado',
+  note_en: 'Fee-free banking with no minimum balance, get paid up to 2 days early with direct deposit, and access to over 60,000 fee-free ATMs. A great option for anyone looking for a simple no-cost bank account.',
+  note_es: 'Banca sin comisiones sin saldo mínimo, recibe tu pago hasta 2 días antes con depósito directo y acceso a más de 60,000 cajeros sin costo. Una excelente opción para quien busca una cuenta bancaria sencilla y sin costo.',
+  url: 'https://www.chime.com/r/roxielyslopez/?c=s',
+};
 
 const NETWORK_LABELS = { AMEX: 'AMEX', VISA: 'VISA', MC: 'MC', DISC: 'Discover' };
 
@@ -271,13 +272,16 @@ export default function AmexReferral() {
   const pageSub    = isEs
     ? 'Aplica a través de estos enlaces de referencia y ayuda a alguien a ganar un bono.'
     : 'Apply through these referral links and help someone earn a bonus.';
-  const applyNow   = isEs ? 'Aplicar Ahora' : 'Apply Now';
-  const annualFee  = isEs ? 'Cuota Anual' : 'Annual Fee';
-  const bonusLabel = isEs ? 'Bono de Bienvenida' : 'Welcome Bonus';
-  const bonusVal   = isEs ? 'Valor' : 'Value';
-  const bestFor    = isEs ? 'Ideal para' : 'Best For';
-  const perksLabel = isEs ? 'Beneficios' : 'Key Benefits';
-  const iUseLabel  = isEs ? 'Mi experiencia' : 'I use this for';
+  const applyNow     = isEs ? 'Aplicar Ahora' : 'Apply Now';
+  const openAccount  = isEs ? 'Abrir Cuenta' : 'Open Account';
+  const annualFee    = isEs ? 'Cuota Anual' : 'Annual Fee';
+  const bonusLabel   = isEs ? 'Bono de Bienvenida' : 'Welcome Bonus';
+  const bonusVal     = isEs ? 'Valor' : 'Value';
+  const bestFor      = isEs ? 'Ideal para' : 'Best For';
+  const perksLabel   = isEs ? 'Beneficios' : 'Key Benefits';
+  const iUseLabel    = isEs ? 'Mi experiencia' : 'My experience';
+  const bankingTitle = isEs ? 'Banca' : 'Banking';
+  const bankingSub   = isEs ? 'Cuentas bancarias recomendadas' : 'Recommended bank accounts';
 
   return (
     <div>
@@ -371,6 +375,92 @@ export default function AmexReferral() {
             </div>
           );
         })}
+      </div>
+
+      {/* Banking section */}
+      <div style={{ marginTop:'2.5rem' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'.75rem', marginBottom:'1.25rem' }}>
+          <div style={{ flex:1, height:2, background:'var(--border)' }} />
+          <div style={{ fontWeight:800, fontSize:'1.1rem', color:'var(--navy)', letterSpacing:'.04em', textTransform:'uppercase' }}>
+            🏦 {bankingTitle}
+          </div>
+          <div style={{ flex:1, height:2, background:'var(--border)' }} />
+        </div>
+        <p style={{ textAlign:'center', color:'var(--muted)', fontSize:'.88rem', marginBottom:'1.5rem', marginTop:0 }}>{bankingSub}</p>
+        <div className="ref-cards-grid">
+          {(() => {
+            const card = CHIME;
+            const name   = isEs ? card.name_es   : card.name_en;
+            const fee    = isEs ? card.annual_fee_es : card.annual_fee_en;
+            const bonus  = isEs ? card.bonus_es   : card.bonus_en;
+            const perks  = isEs ? card.perks_es   : card.perks_en;
+            const best   = isEs ? card.best_es    : card.best_en;
+            const note   = isEs ? card.note_es    : card.note_en;
+            const netLabel = NETWORK_LABELS[card.network] || card.network;
+            return (
+              <div key={card.id} className="bc">
+                <div className="bc-header" style={{ background: `linear-gradient(145deg, ${card.color1}, ${card.color2})` }}>
+                  <div className="bc-top-row">
+                    <span className="bc-issuer-label" style={{ color: card.textColor, opacity:.75 }}>{card.issuerShort}</span>
+                    <span className="bc-network-pill" style={{ color: card.textColor }}>{netLabel}</span>
+                  </div>
+                  <div className="bc-card-mock" style={{ background: `linear-gradient(135deg, ${card.color1}cc, ${card.color2})` }}>
+                    <div className="bc-chip" />
+                    <div className="bc-card-dots" style={{ color: card.textColor }}>•••• •••• •••• ••••</div>
+                    <div className="bc-card-brand" style={{ color: card.textColor, opacity:.85 }}>{card.issuerShort}</div>
+                    <div className="bc-card-net" style={{ color: card.textColor }}>{netLabel}</div>
+                  </div>
+                </div>
+                <div className="bc-body">
+                  <div className="bc-issuer-small">{card.issuer}</div>
+                  <div className="bc-name">{name}</div>
+                  <div className="bc-stats">
+                    <div className="bc-stat-box">
+                      <div className="bc-stat-lbl">{annualFee}</div>
+                      <div className="bc-stat-val">{fee}</div>
+                    </div>
+                    <div className="bc-stat-box">
+                      <div className="bc-stat-lbl">{bonusVal}</div>
+                      <div className="bc-stat-val" style={{ color:'var(--success)' }}>{card.bonus_value}</div>
+                    </div>
+                  </div>
+                  <div className="bc-bonus">
+                    <div className="bc-bonus-lbl">{bonusLabel}</div>
+                    <div className="bc-bonus-txt">{bonus}</div>
+                  </div>
+                  <div style={{ fontSize:'.72rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:'var(--muted)', marginBottom:'.4rem' }}>
+                    {perksLabel}
+                  </div>
+                  <ul className="bc-perks">
+                    {perks.map((p, i) => (
+                      <li key={i} className="bc-perk">
+                        <span className="bc-perk-check">✓</span>
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="bc-best">
+                    <div className="bc-best-lbl">{bestFor}</div>
+                    <div className="bc-best-val">{best}</div>
+                  </div>
+                  <div className="bc-note">
+                    <div className="bc-note-lbl">{iUseLabel}</div>
+                    {note}
+                  </div>
+                  <a
+                    className="bc-apply"
+                    href={card.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ background: card.color1, color: card.textColor }}
+                  >
+                    {openAccount} →
+                  </a>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
       </div>
     </div>
   );
