@@ -100,7 +100,7 @@ export default function CreditCard() {
 
         {/* Combined summary */}
         {cards.length > 0 && (
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'.75rem', marginTop:'1rem' }}>
+          <div className="cc-summary-grid">
             <div className="result-box">
               <div className="rb-label">{t('cc.balance')}</div>
               <div className="rb-value" style={{ color:'var(--danger)' }}>{fmtUSD(totalBalance)}</div>

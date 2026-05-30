@@ -418,16 +418,123 @@ tbody td:first-child { text-align: left; font-weight: 500; }
 .mt-2  { margin-top: 1rem; }
 .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
 
+/* ── Hamburger button (desktop: hidden) ── */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 1.75rem;
+  height: 1.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.hamburger-btn .bar {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: rgba(255,255,255,.9);
+  border-radius: 2px;
+  transition: transform .22s ease, opacity .22s ease;
+}
+.hamburger-btn.is-open .bar:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+.hamburger-btn.is-open .bar:nth-child(2) { opacity: 0; }
+.hamburger-btn.is-open .bar:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+/* ── Mobile dropdown menu (desktop: hidden) ── */
+.mobile-menu { display: none; }
+
+/* Credit card summary 3-col (handled as class for responsive override) */
+.cc-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .75rem;
+  margin-top: 1rem;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
+  /* Header */
+  .header { padding: 0 1.25rem; }
+  .header-inner { height: 56px; flex-wrap: nowrap; padding: 0; gap: 0; }
+
+  /* Hide desktop nav, show hamburger */
+  .nav { display: none; }
+  .hamburger-btn { display: flex; }
+
+  /* Mobile dropdown */
+  .mobile-menu {
+    display: block;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height .28s ease-out;
+    background: var(--navy);
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .mobile-menu.open { max-height: 540px; }
+
+  .mobile-nav-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: .8rem 1.5rem;
+    font-size: .95rem;
+    font-weight: 500;
+    color: rgba(255,255,255,.8);
+    border-radius: 0;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    background: transparent;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s;
+  }
+  .mobile-nav-btn:hover, .mobile-nav-btn.active {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+  }
+  .mobile-nav-btn.lang-btn {
+    color: var(--gold);
+    font-weight: 700;
+    border-bottom: none;
+    padding-top: .9rem;
+    border-top: 1px solid rgba(255,255,255,.12);
+    margin-top: .15rem;
+  }
+
+  /* Layout */
+  .main { margin: 1rem auto; padding: 0 .875rem; }
+  .card { padding: 1.25rem 1rem; }
   .two-col   { grid-template-columns: 1fr; }
   .three-col { grid-template-columns: 1fr 1fr; }
-  .nav-btn   { font-size: .75rem; padding: .35rem .6rem; }
-  .header-inner { flex-wrap: wrap; height: auto; padding: .75rem 0; gap: .5rem; }
-  .main { margin: 1rem auto; padding: 0 1rem; }
+
+  /* Disable sticky panel on mobile */
+  .sticky-results { position: static; }
+
+  /* Budget row: narrower label */
+  .budget-row .cat-label { width: 95px; font-size: .8rem; }
+
+  /* Referral cards: one per row */
   .ref-cards-grid { grid-template-columns: 1fr; }
+
+  /* Credit card 3-col summary: stack */
+  .cc-summary-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Typography */
+  .page-title { font-size: 1.4rem; }
+  .page-sub   { font-size: .88rem; margin-bottom: 1.5rem; }
+  .result-box .rb-value { font-size: 1.25rem; }
 }
+
 @media (max-width: 480px) {
+  .header { padding: 0 1rem; }
+  .main { padding: 0 .75rem; }
   .three-col { grid-template-columns: 1fr; }
   .result-grid { grid-template-columns: 1fr 1fr; }
+  .cc-summary-grid { grid-template-columns: 1fr; }
+  .card { padding: 1rem .875rem; }
 }

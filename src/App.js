@@ -10,7 +10,8 @@ import AmexReferral from './components/AmexReferral';
 import Retirement   from './components/Retirement';
 
 function AppInner() {
-  const [tab, setTab] = useState('car');
+  const [tab,      setTab]      = useState('car');
+  const [menuOpen, setMenuOpen] = useState(false);
   const { toggle } = useContext(LanguageContext);
   const t = useT();
 
@@ -28,6 +29,11 @@ function AppInner() {
     document.title = `${t(`titles.${tab}`)} · FinanceHub`;
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  function navigate(id) {
+    setTab(id);
+    setMenuOpen(false);
+  }
+
   return (
     <div className="app">
       <header className="header">
@@ -36,6 +42,8 @@ function AppInner() {
             <span className="logo-icon">💰</span>
             {t('nav.brand')}
           </div>
+
+          {/* Desktop nav — hidden on mobile via CSS */}
           <nav className="nav">
             {TABS.map(tb => (
               <button
@@ -61,6 +69,36 @@ function AppInner() {
               🌐 {t('nav.langBtn')}
             </button>
           </nav>
+
+          {/* Hamburger — shown only on mobile */}
+          <button
+            className={`hamburger-btn${menuOpen ? ' is-open' : ''}`}
+            onClick={() => setMenuOpen(m => !m)}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          >
+            <span className="bar" />
+            <span className="bar" />
+            <span className="bar" />
+          </button>
+        </div>
+
+        {/* Mobile dropdown menu */}
+        <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
+          {TABS.map(tb => (
+            <button
+              key={tb.id}
+              className={`mobile-nav-btn${tab === tb.id ? ' active' : ''}`}
+              onClick={() => navigate(tb.id)}
+            >
+              {tb.label}
+            </button>
+          ))}
+          <button
+            className="mobile-nav-btn lang-btn"
+            onClick={() => { toggle(); setMenuOpen(false); }}
+          >
+            🌐 {t('nav.langBtn')}
+          </button>
         </div>
       </header>
 

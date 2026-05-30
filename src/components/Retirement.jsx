@@ -226,14 +226,14 @@ export default function Retirement() {
       <div className="card" style={{ marginBottom:'1.25rem' }}>
         <div className="card-title" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'.5rem' }}>
           <span><span className="icon">🏦</span> {t('retirement.accounts')}</span>
-          <div style={{ display:'flex', gap:'.5rem', alignItems:'center' }}>
+          <div style={{ display:'flex', gap:'.5rem', alignItems:'center', flex:1, maxWidth:420 }}>
             <input
               type="text"
               placeholder={t('retirement.newAccountName')}
               value={newAccountName}
               onChange={e => setNewAccountName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addAccount()}
-              style={{ padding:'.4rem .75rem', border:'1.5px solid var(--border)', borderRadius:7, fontSize:'.85rem', width:220 }}
+              style={{ flex:1, minWidth:0, padding:'.4rem .75rem', border:'1.5px solid var(--border)', borderRadius:7, fontSize:'.85rem' }}
             />
             <button className="btn" style={{ padding:'.45rem 1rem', fontSize:'.85rem', whiteSpace:'nowrap' }} onClick={addAccount}>
               + {t('retirement.addAccount')}
