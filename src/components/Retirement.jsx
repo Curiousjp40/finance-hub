@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   ReferenceLine,
@@ -7,16 +7,18 @@ import { fmtUSD } from '../utils/finance';
 import { useT } from '../LanguageContext';
 import { useLocalState } from '../utils/useLocalState';
 
-function projectSavings(currentAge, retirementAge, currentSavings, monthlyContrib, annualReturn) {
-  const months = (retirementAge - currentAge) * 12;
-  const r = annualReturn / 100 / 12;
-  const rows = [];
-  let balance = currentSavings;
-  let totalContrib = currentSavings;
+function projectSavings(currentAge, retirementAge, currentBalance, monthlyContrib, annualReturn, stopAge) {
+  const months     = (retirementAge - currentAge) * 12;
+  const stopMonths = Math.max(0, (stopAge - currentAge) * 12);
+  const r          = annualReturn / 100 / 12;
+  const rows       = [];
+  let balance      = currentBalance;
+  let totalContrib = currentBalance;
 
   for (let m = 1; m <= months; m++) {
-    balance = balance * (1 + r) + monthlyContrib;
-    totalContrib += monthlyContrib;
+    const contrib = m <= stopMonths ? monthlyContrib : 0;
+    balance       = balance * (1 + r) + contrib;
+    totalContrib  += contrib;
     if (m % 12 === 0) {
       rows.push({
         age:           +(currentAge + m / 12).toFixed(0),
@@ -37,11 +39,11 @@ function realValue(futureValue, inflationRate, years) {
   return futureValue / Math.pow(1 + inflationRate / 100, years);
 }
 
-const ACCOUNT_COLORS = ['#1a5276', '#27ae60', '#d4ac0d', '#8e44ad', '#e67e22', '#c0392b', '#16a085'];
+const ACCOUNT_COLORS = ['#1a5276','#27ae60','#d4ac0d','#8e44ad','#e67e22','#c0392b','#16a085'];
 
 const DEFAULT_ACCOUNTS = [
-  { id: 1, name: 'TSP',      balance: 15000, monthlyContrib: 300, annualReturn: 7 },
-  { id: 2, name: 'Roth IRA', balance: 10000, monthlyContrib: 200, annualReturn: 7 },
+  { id: 1, name: 'TSP',      balance: 15000, monthlyContrib: 300, annualReturn: 7, stopAge: 65 },
+  { id: 2, name: 'Roth IRA', balance: 10000, monthlyContrib: 200, annualReturn: 7, stopAge: 65 },
 ];
 
 const CustomTooltip = ({ active, payload, label, t }) => {
@@ -60,6 +62,7 @@ const CustomTooltip = ({ active, payload, label, t }) => {
 
 export default function Retirement() {
   const t = useT();
+  const [newAccountName, setNewAccountName] = useState('');
 
   const [currentAge,    setCurrentAge]    = useLocalState('ret-age',      32);
   const [retirementAge, setRetirementAge] = useLocalState('ret-retage',   65);
@@ -77,11 +80,18 @@ export default function Retirement() {
 
   const yearsToRetire   = Math.max(0, retirementAge - currentAge);
   const retirementYears = 25;
+  const ssAnnual        = ssMonthly * 12;
+  const incomeFromSavings = Math.max(0, desiredIncome - ssAnnual);
+  const target          = savingsTarget(incomeFromSavings);
 
   const accountProjections = useMemo(
     () => accounts.map(acc => ({
       ...acc,
-      ...projectSavings(currentAge, retirementAge, acc.balance, acc.monthlyContrib, acc.annualReturn),
+      ...projectSavings(
+        currentAge, retirementAge,
+        acc.balance, acc.monthlyContrib, acc.annualReturn,
+        acc.stopAge ?? retirementAge
+      ),
     })),
     [accounts, currentAge, retirementAge]
   );
@@ -89,14 +99,10 @@ export default function Retirement() {
   const combinedFinalBalance  = accountProjections.reduce((s, ap) => s + ap.finalBalance, 0);
   const combinedContributions = accountProjections.reduce((s, ap) => s + ap.totalContributions, 0);
   const combinedGrowth        = combinedFinalBalance - combinedContributions;
-
-  /* Social Security reduces the income that must come from savings */
-  const ssAnnual    = ssMonthly * 12;
-  const target      = savingsTarget(Math.max(0, desiredIncome - ssAnnual));
-  const realBalance = realValue(combinedFinalBalance, inflationRate, yearsToRetire);
-  const onTrack     = realBalance >= target;
-  const gap         = Math.abs(realBalance - target);
-  const monthlyDraw = combinedFinalBalance / (retirementYears * 12);
+  const realBalance           = realValue(combinedFinalBalance, inflationRate, yearsToRetire);
+  const onTrack               = target === 0 ? true : realBalance >= target;
+  const gap                   = Math.abs(realBalance - target);
+  const monthlyDraw           = combinedFinalBalance / (retirementYears * 12);
 
   const ageKey   = t('retirement.age');
   const totalKey = t('retirement.total');
@@ -133,14 +139,18 @@ export default function Retirement() {
       .sort((a, b) => a.age - b.age);
   }, [accountProjections]);
 
-  const milestones = [0.25, 0.5, 0.75].map(pct => {
-    const row = combinedRows.find(r => r.balance >= target * pct);
-    return row ? row.age : null;
-  });
+  const milestones = target > 0
+    ? [0.25, 0.5, 0.75].map(pct => {
+        const row = combinedRows.find(r => r.balance >= target * pct);
+        return row ? row.age : null;
+      })
+    : [null, null, null];
 
   function addAccount() {
-    setAccounts(prev => [...prev, { id: nextId, name: `Account ${nextId}`, balance: 0, monthlyContrib: 0, annualReturn: 7 }]);
+    const name = newAccountName.trim() || `Account ${nextId}`;
+    setAccounts(prev => [...prev, { id: nextId, name, balance: 0, monthlyContrib: 0, annualReturn: 7, stopAge: retirementAge }]);
     setNextId(n => n + 1);
+    setNewAccountName('');
   }
 
   function updateAccount(id, field, value) {
@@ -155,17 +165,19 @@ export default function Retirement() {
     <div>
       <p className="page-sub">{t('retirement.sub')}</p>
 
-      {/* ── Global settings ── */}
+      {/* Global settings */}
       <div className="card" style={{ marginBottom:'1.25rem' }}>
         <div className="card-title"><span className="icon">⚙️</span> {t('retirement.globalSettings')}</div>
         <div className="two-col">
           <div className="field">
             <label>{t('retirement.currentAge')}</label>
-            <input type="number" value={currentAge} min={16} max={80} onChange={e => setCurrentAge(+e.target.value)} />
+            <input type="number" value={currentAge || ''} min={16} max={80}
+              onChange={e => setCurrentAge(e.target.value === '' ? 16 : +e.target.value)} />
           </div>
           <div className="field">
             <label>{t('retirement.retirementAge')}</label>
-            <input type="number" value={retirementAge} min={currentAge + 1} max={90} onChange={e => setRetirementAge(+e.target.value)} />
+            <input type="number" value={retirementAge || ''} min={currentAge + 1} max={90}
+              onChange={e => setRetirementAge(e.target.value === '' ? 65 : +e.target.value)} />
           </div>
           <div className="field">
             <label>
@@ -184,7 +196,8 @@ export default function Retirement() {
                 {t('retirement.desiredIncomeSub')}
               </span>
             </label>
-            <input type="number" value={desiredIncome} min={0} step={5000} onChange={e => setDesiredIncome(+e.target.value)} />
+            <input type="number" value={desiredIncome || ''} min={0} step={5000}
+              onChange={e => setDesiredIncome(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
           <div className="field">
             <label>
@@ -193,7 +206,8 @@ export default function Retirement() {
                 {t('retirement.socialSecuritySub')}
               </span>
             </label>
-            <input type="number" value={ssMonthly} min={0} step={50} onChange={e => setSsMonthly(+e.target.value)} />
+            <input type="number" value={ssMonthly || ''} min={0} step={50}
+              onChange={e => setSsMonthly(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
         </div>
         {ssMonthly > 0 && (
@@ -201,15 +215,30 @@ export default function Retirement() {
             SS reduces your required portfolio by {fmtUSD(ssAnnual * 25)} (saves {fmtUSD(ssAnnual)}/yr from savings)
           </div>
         )}
+        {target === 0 && (
+          <div style={{ background:'#eafaf1', border:'1px solid var(--success)', borderRadius:8, padding:'.6rem 1rem', marginTop:'.5rem', fontSize:'.85rem', color:'var(--success)', fontWeight:700 }}>
+            ✅ Your SS benefits cover your full retirement income goal! Any savings is a bonus.
+          </div>
+        )}
       </div>
 
-      {/* ── Accounts ── */}
+      {/* Accounts */}
       <div className="card" style={{ marginBottom:'1.25rem' }}>
-        <div className="card-title" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <div className="card-title" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'.5rem' }}>
           <span><span className="icon">🏦</span> {t('retirement.accounts')}</span>
-          <button className="btn" style={{ padding:'.45rem 1rem', fontSize:'.85rem' }} onClick={addAccount}>
-            + {t('retirement.addAccount')}
-          </button>
+          <div style={{ display:'flex', gap:'.5rem', alignItems:'center' }}>
+            <input
+              type="text"
+              placeholder={t('retirement.newAccountName')}
+              value={newAccountName}
+              onChange={e => setNewAccountName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addAccount()}
+              style={{ padding:'.4rem .75rem', border:'1.5px solid var(--border)', borderRadius:7, fontSize:'.85rem', width:220 }}
+            />
+            <button className="btn" style={{ padding:'.45rem 1rem', fontSize:'.85rem', whiteSpace:'nowrap' }} onClick={addAccount}>
+              + {t('retirement.addAccount')}
+            </button>
+          </div>
         </div>
 
         {accounts.length === 0 && (
@@ -223,7 +252,6 @@ export default function Retirement() {
             const color = ACCOUNT_COLORS[idx % ACCOUNT_COLORS.length];
             return (
               <div key={ap.id} style={{ border:`2px solid ${color}`, borderRadius:10, padding:'1rem', background:'#fafbfc' }}>
-                {/* Account header */}
                 <div style={{ display:'flex', alignItems:'center', gap:'.5rem', marginBottom:'.75rem' }}>
                   <div style={{ width:12, height:12, borderRadius:'50%', background:color, flexShrink:0 }} />
                   <input
@@ -241,19 +269,29 @@ export default function Retirement() {
 
                 <div className="field" style={{ marginBottom:'.55rem' }}>
                   <label style={{ fontSize:'.78rem' }}>{t('retirement.accountBalance')}</label>
-                  <input type="number" value={ap.balance} min={0} step={500} onChange={e => updateAccount(ap.id, 'balance', +e.target.value)} />
+                  <input type="number" value={ap.balance || ''} min={0} step={500}
+                    onChange={e => updateAccount(ap.id, 'balance', e.target.value === '' ? 0 : +e.target.value)} />
                 </div>
                 <div className="field" style={{ marginBottom:'.55rem' }}>
                   <label style={{ fontSize:'.78rem' }}>{t('retirement.accountContrib')}</label>
-                  <input type="number" value={ap.monthlyContrib} min={0} step={50} onChange={e => updateAccount(ap.id, 'monthlyContrib', +e.target.value)} />
+                  <input type="number" value={ap.monthlyContrib || ''} min={0} step={50}
+                    onChange={e => updateAccount(ap.id, 'monthlyContrib', e.target.value === '' ? 0 : +e.target.value)} />
                 </div>
-                <div className="field" style={{ marginBottom:'.8rem' }}>
+                <div className="field" style={{ marginBottom:'.55rem' }}>
                   <label style={{ fontSize:'.78rem' }}>{t('retirement.accountReturn')} — {ap.annualReturn}%</label>
-                  <input type="range" min={1} max={15} step={0.1} value={ap.annualReturn} onChange={e => updateAccount(ap.id, 'annualReturn', +e.target.value)} />
+                  <input type="range" min={1} max={15} step={0.1} value={ap.annualReturn}
+                    onChange={e => updateAccount(ap.id, 'annualReturn', +e.target.value)} />
                   <div className="range-labels"><span>1%</span><span>15%</span></div>
                 </div>
+                <div className="field" style={{ marginBottom:'.8rem' }}>
+                  <label style={{ fontSize:'.78rem' }}>
+                    {t('retirement.stopAge')}
+                    <span style={{ fontWeight:400, color:'var(--muted)', marginLeft:'.4rem' }}>({t('retirement.stopAgeHint')})</span>
+                  </label>
+                  <input type="number" value={ap.stopAge ?? retirementAge} min={currentAge} max={retirementAge}
+                    onChange={e => updateAccount(ap.id, 'stopAge', e.target.value === '' ? retirementAge : Math.min(retirementAge, +e.target.value))} />
+                </div>
 
-                {/* Per-account projected value */}
                 <div style={{ background:`${color}18`, borderRadius:8, padding:'.6rem .75rem', borderLeft:`3px solid ${color}` }}>
                   <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:600, textTransform:'uppercase', letterSpacing:'.04em' }}>
                     {t('retirement.projectedAt').replace('{age}', retirementAge)}
@@ -261,6 +299,11 @@ export default function Retirement() {
                   <div style={{ fontSize:'1.25rem', fontWeight:800, color, marginTop:'.15rem' }}>
                     {fmtUSD(ap.finalBalance)}
                   </div>
+                  {(ap.stopAge ?? retirementAge) < retirementAge && (
+                    <div style={{ fontSize:'.72rem', color:'var(--muted)', marginTop:'.15rem' }}>
+                      Contributions stop at age {ap.stopAge}
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -268,7 +311,7 @@ export default function Retirement() {
         </div>
       </div>
 
-      {/* ── On-track banner + summary ── */}
+      {/* On-track banner + summary */}
       <div className="two-col">
         <div>
           <div style={{
@@ -281,7 +324,7 @@ export default function Retirement() {
             </div>
             <div style={{ fontSize:'.88rem', opacity:.9, lineHeight:1.6 }}>
               {onTrack
-                ? t('retirement.onTrackDesc').replace('{projected}', fmtUSD(realBalance)).replace('{target}', fmtUSD(target))
+                ? t('retirement.onTrackDesc').replace('{projected}', fmtUSD(realBalance)).replace('{target}', fmtUSD(target || desiredIncome * 25))
                 : t('retirement.offTrackDesc').replace('{gap}', fmtUSD(gap)).replace('{target}', fmtUSD(target))
               }
             </div>
@@ -295,16 +338,20 @@ export default function Retirement() {
                 <div className="rb-value">{fmtUSD(combinedFinalBalance)}</div>
                 <div className="rb-sub">{t('retirement.atAge').replace('{age}', retirementAge)}</div>
               </div>
-              <div className="result-box">
-                <div className="rb-label">{t('retirement.target')}</div>
-                <div className="rb-value">{fmtUSD(target)}</div>
-                <div className="rb-sub">{t('retirement.targetSub').replace('{years}', retirementYears).replace('{income}', fmtUSD(desiredIncome))}</div>
-              </div>
-              <div className="result-box">
-                <div className="rb-label">{onTrack ? t('retirement.surplus') : t('retirement.shortfall')}</div>
-                <div className="rb-value" style={{ color: onTrack ? 'var(--success)' : 'var(--danger)' }}>{fmtUSD(gap)}</div>
-                <div className="rb-sub">real ({inflationRate}% {t('retirement.inflationRate').toLowerCase()})</div>
-              </div>
+              {target > 0 && (
+                <div className="result-box">
+                  <div className="rb-label">{t('retirement.target')}</div>
+                  <div className="rb-value">{fmtUSD(target)}</div>
+                  <div className="rb-sub">{t('retirement.targetSub').replace('{years}', retirementYears).replace('{income}', fmtUSD(incomeFromSavings))}</div>
+                </div>
+              )}
+              {target > 0 && (
+                <div className="result-box">
+                  <div className="rb-label">{onTrack ? t('retirement.surplus') : t('retirement.shortfall')}</div>
+                  <div className="rb-value" style={{ color: onTrack ? 'var(--success)' : 'var(--danger)' }}>{fmtUSD(gap)}</div>
+                  <div className="rb-sub">real ({inflationRate}% inflation)</div>
+                </div>
+              )}
               <div className="result-box">
                 <div className="rb-label">{t('retirement.monthlyInRetirement')}</div>
                 <div className="rb-value">{fmtUSD(monthlyDraw)}</div>
@@ -326,7 +373,6 @@ export default function Retirement() {
           </div>
         </div>
 
-        {/* Account breakdown */}
         <div className="card">
           <div className="card-title"><span className="icon">🗂</span> {t('retirement.accountsSummary')}</div>
           {accountProjections.length === 0 ? (
@@ -365,7 +411,7 @@ export default function Retirement() {
         </div>
       </div>
 
-      {/* ── Growth chart ── */}
+      {/* Growth chart */}
       <div className="card">
         <div className="card-title"><span className="icon">📈</span> {t('retirement.growthChart')}</div>
         {chartData.length === 0 ? (
@@ -380,29 +426,16 @@ export default function Retirement() {
                 <YAxis tickFormatter={v => '$' + Math.round(v / 1000) + 'k'} tick={{ fontSize:11 }} width={62} />
                 <Tooltip content={<CustomTooltip t={t} />} />
                 <Legend wrapperStyle={{ fontSize:11, paddingTop:'8px' }} />
-                <ReferenceLine y={target} stroke="#c0392b" strokeDasharray="6 3"
-                  label={{ value:t('retirement.target'), position:'insideTopRight', fontSize:10, fill:'#c0392b' }} />
+                {target > 0 && (
+                  <ReferenceLine y={target} stroke="#c0392b" strokeDasharray="6 3"
+                    label={{ value:t('retirement.target'), position:'insideTopRight', fontSize:10, fill:'#c0392b' }} />
+                )}
                 {accountProjections.map((ap, idx) => (
-                  <Line
-                    key={ap.id}
-                    type="monotone"
-                    dataKey={ap.name}
-                    stroke={ACCOUNT_COLORS[idx % ACCOUNT_COLORS.length]}
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r:4 }}
-                  />
+                  <Line key={ap.id} type="monotone" dataKey={ap.name}
+                    stroke={ACCOUNT_COLORS[idx % ACCOUNT_COLORS.length]} strokeWidth={2} dot={false} activeDot={{ r:4 }} />
                 ))}
                 {accountProjections.length > 1 && (
-                  <Line
-                    type="monotone"
-                    dataKey={totalKey}
-                    stroke="#0a2342"
-                    strokeWidth={2.5}
-                    strokeDasharray="5 3"
-                    dot={false}
-                    activeDot={{ r:4 }}
-                  />
+                  <Line type="monotone" dataKey={totalKey} stroke="#0a2342" strokeWidth={2.5} strokeDasharray="5 3" dot={false} activeDot={{ r:4 }} />
                 )}
               </LineChart>
             </ResponsiveContainer>
@@ -410,35 +443,41 @@ export default function Retirement() {
         )}
       </div>
 
-      {/* ── Milestones ── */}
+      {/* Milestones */}
       <div className="card">
         <div className="card-title"><span className="icon">🏁</span> {t('retirement.milestones')}</div>
-        <div className="three-col">
-          {[
-            { pct:'25%', key:t('retirement.milestone25'), age:milestones[0] },
-            { pct:'50%', key:t('retirement.milestone50'), age:milestones[1] },
-            { pct:'75%', key:t('retirement.milestone75'), age:milestones[2] },
-          ].map((m, i) => (
-            <div key={i} style={{
-              padding:'1.1rem', borderRadius:10, textAlign:'center',
-              background: m.age ? '#eafaf1' : '#fdedec',
-              border:`1.5px solid ${m.age ? 'var(--success)' : 'var(--border)'}`,
-            }}>
-              <div style={{ fontSize:'1.6rem', fontWeight:800, color: m.age ? 'var(--success)' : 'var(--muted)' }}>
-                {m.pct}
-              </div>
-              <div style={{ fontSize:'.82rem', color:'var(--muted)', margin:'.2rem 0' }}>{m.key}</div>
-              <div style={{ fontSize:'1rem', fontWeight:700, color:'var(--navy)' }}>
-                {m.age ? `${t('retirement.age')} ${m.age}` : '—'}
-              </div>
-              {m.age && (
-                <div style={{ fontSize:'.75rem', color:'var(--muted)', marginTop:'.15rem' }}>
-                  {t('retirement.retireIn').replace('{n}', Math.max(0, retirementAge - m.age))}
+        {target === 0 ? (
+          <div style={{ textAlign:'center', color:'var(--success)', padding:'1.5rem', fontSize:'.9rem', fontWeight:600 }}>
+            ✅ SS covers your retirement — any savings is already beyond target!
+          </div>
+        ) : (
+          <div className="three-col">
+            {[
+              { pct:'25%', key:t('retirement.milestone25'), age:milestones[0] },
+              { pct:'50%', key:t('retirement.milestone50'), age:milestones[1] },
+              { pct:'75%', key:t('retirement.milestone75'), age:milestones[2] },
+            ].map((m, i) => (
+              <div key={i} style={{
+                padding:'1.1rem', borderRadius:10, textAlign:'center',
+                background: m.age ? '#eafaf1' : '#fdedec',
+                border:`1.5px solid ${m.age ? 'var(--success)' : 'var(--border)'}`,
+              }}>
+                <div style={{ fontSize:'1.6rem', fontWeight:800, color: m.age ? 'var(--success)' : 'var(--muted)' }}>
+                  {m.pct}
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+                <div style={{ fontSize:'.82rem', color:'var(--muted)', margin:'.2rem 0' }}>{m.key}</div>
+                <div style={{ fontSize:'1rem', fontWeight:700, color:'var(--navy)' }}>
+                  {m.age ? `${t('retirement.age')} ${m.age}` : '—'}
+                </div>
+                {m.age && (
+                  <div style={{ fontSize:'.75rem', color:'var(--muted)', marginTop:'.15rem' }}>
+                    {t('retirement.retireIn').replace('{n}', Math.max(0, retirementAge - m.age))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

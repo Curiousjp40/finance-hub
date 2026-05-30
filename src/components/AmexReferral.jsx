@@ -34,6 +34,8 @@ const CARDS = [
     ],
     best_en: 'Foodies who dine out & order delivery often',
     best_es: 'Amantes de la gastronomía que comen fuera con frecuencia',
+    note_en: 'I use this for all dining and groceries — the 4x points add up fast and I earned enough for a free flight within months.',
+    note_es: 'La uso para todas mis comidas y supermercados — los puntos 4x se acumulan rápido y gané suficiente para un vuelo gratis en meses.',
     url: 'https://americanexpress.com/en-us/referral/gold-card?ref=RYANPmhRc&XLINK=MYCP',
   },
   {
@@ -69,6 +71,8 @@ const CARDS = [
     ],
     best_en: 'Everyday spenders who want simple cash back',
     best_es: 'Personas que buscan reembolso sencillo en compras diarias',
+    note_en: 'My wife uses this for everyday spending — the 3% cash back at supermarkets and gas stations saves us money every month.',
+    note_es: 'Mi esposa la usa para gastos cotidianos — el 3% en supermercados y gasolineras nos ahorra dinero cada mes.',
     url: 'https://americanexpress.com/en-us/referral/blue-cash-everyday-credit-card?ref=RYANP4Duo&XLINK=MYCP',
   },
   {
@@ -104,6 +108,8 @@ const CARDS = [
     ],
     best_en: 'Small business owners who want simple flat-rate rewards',
     best_es: 'Dueños de pequeñas empresas que buscan recompensas simples',
+    note_en: 'I use this for all business expenses — the 2x points on everything with no annual fee makes it the best flat-rate business card.',
+    note_es: 'La uso para todos mis gastos de negocio — los 2x puntos en todo sin cuota anual la hace la mejor tarjeta empresarial.',
     url: 'https://americanexpress.com/en-us/referral/bluebusinessplus-credit-card?ref=RYANPhnor&XLINK=MYCP',
   },
   {
@@ -139,6 +145,8 @@ const CARDS = [
     ],
     best_en: 'College students building credit for the first time',
     best_es: 'Estudiantes universitarios construyendo su historial crediticio',
+    note_en: 'Great first card for anyone building credit — the cashback match at the end of year 1 doubles everything you earned.',
+    note_es: 'Excelente primera tarjeta para quienes construyen crédito — el Cashback Match al final del año 1 duplica todo lo ganado.',
     url: 'https://www.discovercard.com/application/website/apply?srcCde=RJWW&extole_zone_shareable_code=rjpohlman034&extole_share_channel=EXTOLE_EMAIL&extole_zone_name=blank&extole_zone_click_event_id=7645805379395169374&srcCde=RJWW&cmpgnid=raf-dca-consumer-it&scmpgnid=7595607159513222530_7645798708708575489&iq_id=yraf_1508309757_em_74_325577787659&extole_shareable_code=rjpohlman034&source=RAF',
   },
   {
@@ -174,6 +182,8 @@ const CARDS = [
     ],
     best_en: 'Anyone who wants fee-free banking with early pay',
     best_es: 'Cualquiera que quiera banco sin comisiones y pago anticipado',
+    note_en: 'My wife uses this for fee-free banking — getting paid 2 days early with direct deposit has been a game changer.',
+    note_es: 'Mi esposa usa esto para banca sin comisiones — recibir el pago 2 días antes con depósito directo ha cambiado todo.',
     url: 'https://www.chime.com/r/roxielyslopez/?c=s',
   },
   {
@@ -209,6 +219,8 @@ const CARDS = [
     ],
     best_en: 'Flexible spenders who want to maximize a custom category',
     best_es: 'Quienes buscan maximizar recompensas en una categoría a su elección',
+    note_en: 'My wife uses this for the 3% cash back in her chosen category — flexible and no annual fee.',
+    note_es: 'Mi esposa la usa por el 3% de reembolso en su categoría elegida — flexible y sin cuota anual.',
     url: 'https://www.bankofamerica.com/refer?prod=ccr&refid=G3B3XPVO-CCCR01',
   },
   {
@@ -244,6 +256,8 @@ const CARDS = [
     ],
     best_en: 'Everyday spenders who love food, fun & streaming',
     best_es: 'Quienes disfrutan comida, entretenimiento y streaming',
+    note_en: 'My wife uses this for dining and entertainment — the 3% cash back on restaurants and streaming pays for itself.',
+    note_es: 'Mi esposa la usa para restaurantes y entretenimiento — el 3% de reembolso se paga solo.',
     url: 'https://i.capitalone.com/J4Esp4Bjp',
   },
 ];
@@ -263,6 +277,7 @@ export default function AmexReferral() {
   const bonusVal   = isEs ? 'Valor' : 'Value';
   const bestFor    = isEs ? 'Ideal para' : 'Best For';
   const perksLabel = isEs ? 'Beneficios' : 'Key Benefits';
+  const iUseLabel  = isEs ? 'Mi experiencia' : 'I use this for';
 
   return (
     <div>
@@ -270,11 +285,12 @@ export default function AmexReferral() {
 
       <div className="ref-cards-grid">
         {CARDS.map(card => {
-          const name     = isEs ? card.name_es     : card.name_en;
-          const fee      = isEs ? card.annual_fee_es : card.annual_fee_en;
-          const bonus    = isEs ? card.bonus_es     : card.bonus_en;
-          const perks    = isEs ? card.perks_es     : card.perks_en;
-          const best     = isEs ? card.best_es      : card.best_en;
+          const name   = isEs ? card.name_es   : card.name_en;
+          const fee    = isEs ? card.annual_fee_es : card.annual_fee_en;
+          const bonus  = isEs ? card.bonus_es   : card.bonus_en;
+          const perks  = isEs ? card.perks_es   : card.perks_en;
+          const best   = isEs ? card.best_es    : card.best_en;
+          const note   = isEs ? card.note_es    : card.note_en;
           const netLabel = NETWORK_LABELS[card.network] || card.network;
 
           return (
@@ -285,17 +301,16 @@ export default function AmexReferral() {
                 style={{ background: `linear-gradient(145deg, ${card.color1}, ${card.color2})` }}
               >
                 <div className="bc-top-row">
-                  <span className="bc-issuer-label" style={{ color: card.textColor, opacity: .75 }}>
+                  <span className="bc-issuer-label" style={{ color: card.textColor, opacity:.75 }}>
                     {card.issuerShort}
                   </span>
-                  <span className="bc-network-pill">{netLabel}</span>
+                  <span className="bc-network-pill" style={{ color: card.textColor }}>{netLabel}</span>
                 </div>
-
                 <div className="bc-card-mock" style={{ background: `linear-gradient(135deg, ${card.color1}cc, ${card.color2})` }}>
                   <div className="bc-chip" />
-                  <div className="bc-card-dots">•••• •••• •••• ••••</div>
-                  <div className="bc-card-brand" style={{ color: card.textColor, opacity: .85 }}>{card.issuerShort}</div>
-                  <div className="bc-card-net">{netLabel}</div>
+                  <div className="bc-card-dots" style={{ color: card.textColor }}>•••• •••• •••• ••••</div>
+                  <div className="bc-card-brand" style={{ color: card.textColor, opacity:.85 }}>{card.issuerShort}</div>
+                  <div className="bc-card-net" style={{ color: card.textColor }}>{netLabel}</div>
                 </div>
               </div>
 
@@ -311,7 +326,7 @@ export default function AmexReferral() {
                   </div>
                   <div className="bc-stat-box">
                     <div className="bc-stat-lbl">{bonusVal}</div>
-                    <div className="bc-stat-val" style={{ color: 'var(--success)' }}>{card.bonus_value}</div>
+                    <div className="bc-stat-val" style={{ color:'var(--success)' }}>{card.bonus_value}</div>
                   </div>
                 </div>
 
@@ -320,7 +335,7 @@ export default function AmexReferral() {
                   <div className="bc-bonus-txt">{bonus}</div>
                 </div>
 
-                <div style={{ fontSize: '.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: 'var(--muted)', marginBottom: '.4rem' }}>
+                <div style={{ fontSize:'.72rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:'var(--muted)', marginBottom:'.4rem' }}>
                   {perksLabel}
                 </div>
                 <ul className="bc-perks">
@@ -337,12 +352,18 @@ export default function AmexReferral() {
                   <div className="bc-best-val">{best}</div>
                 </div>
 
+                {/* Personal note */}
+                <div className="bc-note">
+                  <div className="bc-note-lbl">{iUseLabel}</div>
+                  {note}
+                </div>
+
                 <a
                   className="bc-apply"
                   href={card.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ background: card.color1 }}
+                  style={{ background: card.color1, color: card.textColor }}
                 >
                   {applyNow} →
                 </a>

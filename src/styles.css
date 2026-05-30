@@ -166,11 +166,35 @@ tbody td:first-child { text-align: left; font-weight: 500; }
 .payoff-scenario .ps-row { display: flex; justify-content: space-between; font-size: .85rem; color: var(--muted); }
 .payoff-scenario .ps-row span:last-child { font-weight: 600; color: var(--text); }
 
+/* ── Sticky results panel ── */
+.sticky-results { position: sticky; top: 5.5rem; }
+
 /* ── Referral baseball cards ── */
 .ref-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(278px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(278px, 400px));
   gap: 1.5rem;
+  justify-content: center;
+}
+
+.bc-note {
+  background: var(--light);
+  border-radius: 8px;
+  padding: .55rem .75rem;
+  font-size: .8rem;
+  color: var(--text);
+  font-style: italic;
+  border-left: 3px solid var(--accent);
+  line-height: 1.45;
+}
+.bc-note-lbl {
+  font-size: .63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--accent);
+  margin-bottom: .2rem;
+  font-style: normal;
 }
 
 .bc {
@@ -401,7 +425,7 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   .nav-btn   { font-size: .75rem; padding: .35rem .6rem; }
   .header-inner { flex-wrap: wrap; height: auto; padding: .75rem 0; gap: .5rem; }
   .main { margin: 1rem auto; padding: 0 1rem; }
-  .amex-hero { padding: 1.5rem; }
+  .ref-cards-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
   .three-col { grid-template-columns: 1fr; }
