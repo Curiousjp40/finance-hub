@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/finance-hub/static/css/main.9cd709cf.css",
-    "main.js": "/finance-hub/static/js/main.eb70c2fd.js",
+    "main.js": "/finance-hub/static/js/main.9ae1d4ae.js",
     "static/js/453.30c24d4c.chunk.js": "/finance-hub/static/js/453.30c24d4c.chunk.js",
     "index.html": "/finance-hub/index.html",
     "main.9cd709cf.css.map": "/finance-hub/static/css/main.9cd709cf.css.map",
-    "main.eb70c2fd.js.map": "/finance-hub/static/js/main.eb70c2fd.js.map",
+    "main.9ae1d4ae.js.map": "/finance-hub/static/js/main.9ae1d4ae.js.map",
     "453.30c24d4c.chunk.js.map": "/finance-hub/static/js/453.30c24d4c.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.9cd709cf.css",
-    "static/js/main.eb70c2fd.js"
+    "static/js/main.9ae1d4ae.js"
   ]
 }
