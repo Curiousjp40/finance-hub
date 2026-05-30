@@ -7,6 +7,7 @@ import Budget       from './components/Budget';
 import NetIncome    from './components/NetIncome';
 import CreditCard   from './components/CreditCard';
 import AmexReferral from './components/AmexReferral';
+import Retirement   from './components/Retirement';
 
 function AppInner() {
   const [tab, setTab] = useState('car');
@@ -19,7 +20,8 @@ function AppInner() {
     { id: 'budget', label: t('nav.budget') },
     { id: 'tax',    label: t('nav.tax')    },
     { id: 'cc',     label: t('nav.cc')     },
-    { id: 'amex',   label: t('nav.amex')   },
+    { id: 'amex',       label: t('nav.amex')       },
+    { id: 'retirement', label: t('nav.retirement') },
   ];
 
   return (
@@ -66,7 +68,8 @@ function AppInner() {
         {tab === 'budget' && <Budget />}
         {tab === 'tax'    && <NetIncome />}
         {tab === 'cc'     && <CreditCard />}
-        {tab === 'amex'   && <AmexReferral />}
+        {tab === 'amex'       && <AmexReferral />}
+        {tab === 'retirement' && <Retirement />}
       </main>
 
       <footer className="footer">
