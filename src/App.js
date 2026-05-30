@@ -8,6 +8,7 @@ import NetIncome    from './components/NetIncome';
 import CreditCard   from './components/CreditCard';
 import AmexReferral from './components/AmexReferral';
 import Retirement   from './components/Retirement';
+import PersonalLoan from './components/PersonalLoan';
 
 function AppInner() {
   const [tab,      setTab]      = useState('car');
@@ -21,8 +22,9 @@ function AppInner() {
     { id: 'budget',     label: t('nav.budget')     },
     { id: 'tax',        label: t('nav.tax')        },
     { id: 'cc',         label: t('nav.cc')         },
-    { id: 'amex',       label: t('nav.amex')       },
-    { id: 'retirement', label: t('nav.retirement') },
+    { id: 'amex',        label: t('nav.amex')        },
+    { id: 'retirement',  label: t('nav.retirement')  },
+    { id: 'personalLoan',label: t('nav.personalLoan')},
   ];
 
   useEffect(() => {
@@ -111,7 +113,8 @@ function AppInner() {
         {tab === 'tax'        && <NetIncome />}
         {tab === 'cc'         && <CreditCard />}
         {tab === 'amex'       && <AmexReferral />}
-        {tab === 'retirement' && <Retirement />}
+        {tab === 'retirement'  && <Retirement />}
+        {tab === 'personalLoan'&& <PersonalLoan />}
       </main>
 
       <footer className="footer">
