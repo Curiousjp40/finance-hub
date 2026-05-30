@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   ReferenceLine,
 } from 'recharts';
 import { fmtUSD } from '../utils/finance';
 import { useT } from '../LanguageContext';
+import { useLocalState } from '../utils/useLocalState';
 
 function projectSavings(currentAge, retirementAge, currentSavings, monthlyContrib, annualReturn) {
   const months = (retirementAge - currentAge) * 12;
@@ -60,12 +61,19 @@ const CustomTooltip = ({ active, payload, label, t }) => {
 export default function Retirement() {
   const t = useT();
 
-  const [currentAge,    setCurrentAge]    = useState(32);
-  const [retirementAge, setRetirementAge] = useState(65);
-  const [inflationRate, setInflationRate] = useState(3);
-  const [desiredIncome, setDesiredIncome] = useState(60000);
-  const [accounts,      setAccounts]      = useState(DEFAULT_ACCOUNTS);
-  const [nextId,        setNextId]        = useState(3);
+  const [currentAge,    setCurrentAge]    = useLocalState('ret-age',      32);
+  const [retirementAge, setRetirementAge] = useLocalState('ret-retage',   65);
+  const [inflationRate, setInflationRate] = useLocalState('ret-inflation', 3);
+  const [desiredIncome, setDesiredIncome] = useLocalState('ret-income',   60000);
+  const [ssMonthly,     setSsMonthly]     = useLocalState('ret-ss',       0);
+  const [accounts,      setAccounts]      = useLocalState('ret-accounts', DEFAULT_ACCOUNTS);
+  const [nextId,        setNextId]        = useLocalState('ret-nextid', () => {
+    try {
+      const stored = localStorage.getItem('ret-accounts');
+      if (stored) return Math.max(...JSON.parse(stored).map(a => a.id), 0) + 1;
+    } catch {}
+    return 3;
+  });
 
   const yearsToRetire   = Math.max(0, retirementAge - currentAge);
   const retirementYears = 25;
@@ -82,7 +90,9 @@ export default function Retirement() {
   const combinedContributions = accountProjections.reduce((s, ap) => s + ap.totalContributions, 0);
   const combinedGrowth        = combinedFinalBalance - combinedContributions;
 
-  const target      = savingsTarget(desiredIncome);
+  /* Social Security reduces the income that must come from savings */
+  const ssAnnual    = ssMonthly * 12;
+  const target      = savingsTarget(Math.max(0, desiredIncome - ssAnnual));
   const realBalance = realValue(combinedFinalBalance, inflationRate, yearsToRetire);
   const onTrack     = realBalance >= target;
   const gap         = Math.abs(realBalance - target);
@@ -176,7 +186,21 @@ export default function Retirement() {
             </label>
             <input type="number" value={desiredIncome} min={0} step={5000} onChange={e => setDesiredIncome(+e.target.value)} />
           </div>
+          <div className="field">
+            <label>
+              {t('retirement.socialSecurity')}
+              <span style={{ fontWeight:400, color:'var(--muted)', marginLeft:'.4rem', fontSize:'.78rem' }}>
+                {t('retirement.socialSecuritySub')}
+              </span>
+            </label>
+            <input type="number" value={ssMonthly} min={0} step={50} onChange={e => setSsMonthly(+e.target.value)} />
+          </div>
         </div>
+        {ssMonthly > 0 && (
+          <div style={{ background:'#eafaf1', border:'1px solid var(--success)', borderRadius:8, padding:'.6rem 1rem', marginTop:'-.25rem', fontSize:'.85rem', color:'var(--success)', fontWeight:600 }}>
+            SS reduces your required portfolio by {fmtUSD(ssAnnual * 25)} (saves {fmtUSD(ssAnnual)}/yr from savings)
+          </div>
+        )}
       </div>
 
       {/* ── Accounts ── */}

@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { calcFederalTax, calcFICA, fmtUSD, fmtUSD2 } from '../utils/finance';
 import { useT } from '../LanguageContext';
+import { useLocalState } from '../utils/useLocalState';
 
 const STATE_RATES = {
   'AL':4,'AK':0,'AZ':2.5,'AR':4.7,'CA':9.3,'CO':4.4,'CT':5,'DE':5.55,
@@ -15,12 +16,12 @@ const STATE_RATES = {
 
 export default function NetIncome() {
   const t = useT();
-  const [gross,  setGross]  = useState(75000);
-  const [filing, setFiling] = useState('single');
-  const [state,  setState]  = useState('TX');
-  const [k401,   setK401]   = useState(6);
-  const [hsa,    setHsa]    = useState(0);
-  const [other,  setOther]  = useState(0);
+  const [gross,  setGross]  = useLocalState('ni-gross',  75000);
+  const [filing, setFiling] = useLocalState('ni-filing', 'single');
+  const [state,  setState]  = useLocalState('ni-state',  'TX');
+  const [k401,   setK401]   = useLocalState('ni-k401',   6);
+  const [hsa,    setHsa]    = useLocalState('ni-hsa',    0);
+  const [other,  setOther]  = useLocalState('ni-other',  0);
 
   const preDeduct  = Math.max(0, gross - (gross * k401 / 100) - hsa - other);
   const federal    = useMemo(() => calcFederalTax(preDeduct, filing), [preDeduct, filing]);

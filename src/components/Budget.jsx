@@ -1,21 +1,25 @@
 import { useState, useMemo, useEffect } from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { fmtUSD, fmtUSD2 } from '../utils/finance';
 import { useT, useLang } from '../LanguageContext';
+import { useLocalState } from '../utils/useLocalState';
 
 const COLORS = ['#1a5276','#2e86c1','#1e8449','#d4ac0d','#c0392b','#8e44ad','#16a085','#e67e22','#7f8c8d','#2c3e50'];
 
+/* need/want/save classification for each default category (by index) */
+const CAT_TYPES = ['need','need','need','need','want','need','want','save','want','want'];
+
 function makeDefaults(t) {
-  const names = t('budget.defaultCats');
+  const names   = t('budget.defaultCats');
   const amounts = [1500, 400, 350, 150, 200, 100, 150, 500, 100, 200];
-  return names.map((name, i) => ({ name, amount: amounts[i] }));
+  return names.map((name, i) => ({ name, amount: amounts[i], type: CAT_TYPES[i] }));
 }
 
 export default function Budget() {
   const t    = useT();
   const lang = useLang();
 
-  const [income,     setIncome]     = useState(5000);
+  const [income,     setIncome]     = useLocalState('budget-income', 5000);
   const [categories, setCategories] = useState(() => makeDefaults(t));
   const [newCat,     setNewCat]     = useState('');
 
@@ -26,9 +30,18 @@ export default function Budget() {
 
   const totalExpenses = useMemo(() => categories.reduce((s, c) => s + (c.amount || 0), 0), [categories]);
   const remaining     = income - totalExpenses;
-  const savingsIdx    = t('budget.defaultCats').indexOf(t('budget.defaultCats')[7]);
-  const savingsAmt    = categories[savingsIdx]?.amount || 0;
-  const savingsRate   = income > 0 ? (savingsAmt / income * 100) : 0;
+
+  /* Savings rate: sum all categories marked 'save' */
+  const savingsAmt  = categories.filter(c => c.type === 'save').reduce((s, c) => s + c.amount, 0);
+  const savingsRate = income > 0 ? (savingsAmt / income * 100) : 0;
+
+  /* 50/30/20 aggregates */
+  const needs      = categories.filter(c => c.type === 'need').reduce((s, c) => s + c.amount, 0);
+  const wants      = categories.filter(c => c.type === 'want').reduce((s, c) => s + c.amount, 0);
+  const saves      = savingsAmt;
+  const needTarget = income * 0.5;
+  const wantTarget = income * 0.3;
+  const saveTarget = income * 0.2;
 
   function updateAmount(idx, val) {
     setCategories(prev => prev.map((c, i) => i === idx ? { ...c, amount: +val || 0 } : c));
@@ -36,7 +49,7 @@ export default function Budget() {
   function addCategory() {
     const name = newCat.trim();
     if (!name) return;
-    setCategories(prev => [...prev, { name, amount: 0 }]);
+    setCategories(prev => [...prev, { name, amount: 0, type: 'want' }]);
     setNewCat('');
   }
   function removeCategory(idx) {
@@ -46,11 +59,18 @@ export default function Budget() {
   const pieData    = categories.filter(c => c.amount > 0).map(c => ({ name: c.name, value: c.amount }));
   const statusColor = remaining >= 0 ? 'var(--success)' : 'var(--danger)';
 
+  const rule2030Rows = [
+    { label: t('budget.needs'), hint: t('budget.needsHint'),   actual: needs, target: needTarget, color:'#1a5276', higherIsBetter: false },
+    { label: t('budget.wants'), hint: t('budget.wantsHint'),   actual: wants, target: wantTarget, color:'#8e44ad', higherIsBetter: false },
+    { label: t('budget.saves'), hint: t('budget.savingsHint'), actual: saves, target: saveTarget, color:'#1e8449', higherIsBetter: true  },
+  ];
+
   return (
     <div>
       <p className="page-sub">{t('budget.sub')}</p>
 
       <div className="two-col">
+        {/* ── LEFT: inputs ── */}
         <div className="card">
           <div className="card-title"><span className="icon">💵</span> {t('budget.monthlyIncome')}</div>
           <div className="field">
@@ -70,10 +90,13 @@ export default function Budget() {
                 <div className="progress-bar">
                   <div className="progress-fill" style={{ width: Math.min(100, pct) + '%', background: color }} />
                 </div>
+                <span style={{ fontSize:'.78rem', color:'var(--muted)', width:38, textAlign:'right', flexShrink:0 }}>
+                  {pct.toFixed(0)}%
+                </span>
                 <input
                   type="number" min={0} value={c.amount}
                   onChange={e => updateAmount(i, e.target.value)}
-                  style={{width:90, textAlign:'right'}}
+                  style={{width:82, textAlign:'right'}}
                 />
                 <button
                   onClick={() => removeCategory(i)}
@@ -95,6 +118,7 @@ export default function Budget() {
           </div>
         </div>
 
+        {/* ── RIGHT: summary + charts ── */}
         <div>
           <div className="card">
             <div className="card-title"><span className="icon">📊</span> {t('budget.summary')}</div>
@@ -123,21 +147,59 @@ export default function Budget() {
                 ⚠ {t('budget.overspend').replace('{amt}', fmtUSD2(Math.abs(remaining)))}
               </div>
             )}
+
+            {/* 50/30/20 Rule */}
+            {income > 0 && (
+              <div style={{ marginTop:'1.25rem', paddingTop:'1.25rem', borderTop:'1px solid var(--border)' }}>
+                <div style={{ fontWeight:700, fontSize:'.95rem', color:'var(--navy)', marginBottom:'.85rem' }}>
+                  {t('budget.rule2030')}
+                </div>
+                {rule2030Rows.map((row, i) => {
+                  const filledPct = row.target > 0 ? Math.min(120, (row.actual / row.target) * 100) : 0;
+                  const isGood    = row.higherIsBetter ? row.actual >= row.target : row.actual <= row.target;
+                  return (
+                    <div key={i} style={{ marginBottom:'1rem' }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:'.3rem' }}>
+                        <div>
+                          <span style={{ fontWeight:700, fontSize:'.88rem', color:'var(--navy)' }}>{row.label}</span>
+                          <span style={{ fontSize:'.78rem', color:'var(--muted)', marginLeft:'.5rem' }}>(target {fmtUSD(row.target)})</span>
+                        </div>
+                        <span style={{ fontWeight:700, fontSize:'.88rem', color: isGood ? 'var(--success)' : 'var(--danger)' }}>
+                          {fmtUSD(row.actual)}
+                        </span>
+                      </div>
+                      <div style={{ height:8, borderRadius:99, background:'var(--border)', overflow:'hidden' }}>
+                        <div style={{
+                          height:'100%', borderRadius:99, transition:'width .3s',
+                          width:`${Math.min(100, filledPct)}%`,
+                          background: isGood ? row.color : 'var(--danger)',
+                        }} />
+                      </div>
+                      <div style={{ fontSize:'.73rem', color:'var(--muted)', marginTop:'.2rem' }}>{row.hint}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
+          {/* Pie chart — fixed height and Legend for readable labels */}
           <div className="card">
             <div className="card-title"><span className="icon">🥧</span> {t('budget.breakdown')}</div>
-            <div style={{height:280}}>
+            <div style={{height:320}}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={pieData} cx="50%" cy="45%" outerRadius={90} dataKey="value"
-                    label={({name, percent}) => `${name} ${(percent*100).toFixed(0)}%`}
-                    labelLine={false} fontSize={10}
+                    data={pieData} cx="50%" cy="42%" outerRadius={85} dataKey="value"
+                    label={false}
                   >
                     {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
                   <Tooltip formatter={v => fmtUSD(v)} />
+                  <Legend
+                    formatter={value => <span style={{fontSize:'.78rem', color:'var(--text)'}}>{value}</span>}
+                    wrapperStyle={{fontSize:'.78rem', paddingTop:'6px'}}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>

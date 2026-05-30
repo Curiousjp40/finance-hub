@@ -1,16 +1,35 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { monthlyPayment, amortizeSchedule, fmtUSD, fmtUSD2 } from '../utils/finance';
 import { useT } from '../LanguageContext';
+import { useLocalState } from '../utils/useLocalState';
+
+function calcEarlyPayoff(principal, rate, payment, extra) {
+  if (principal <= 0 || payment + extra <= 0) return null;
+  const r = rate / 100 / 12;
+  if (payment + extra <= principal * r) return null;
+  let balance = principal;
+  let month = 0;
+  let totalInterest = 0;
+  while (balance > 0.01 && month < 600) {
+    const interest = balance * r;
+    const paid = Math.min(payment + extra, balance + interest);
+    totalInterest += interest;
+    balance = Math.max(0, balance + interest - paid);
+    month++;
+  }
+  return { months: month, totalInterest };
+}
 
 export default function CarLoan() {
   const t = useT();
-  const [price,     setPrice]     = useState(35000);
-  const [down,      setDown]      = useState(5000);
-  const [rate,      setRate]      = useState(6.5);
-  const [term,      setTerm]      = useState(60);
-  const [tradeIn,   setTradeIn]   = useState(0);
-  const [showTable, setShowTable] = useState(false);
+  const [price,     setPrice]     = useLocalState('cl-price',   35000);
+  const [down,      setDown]      = useLocalState('cl-down',    5000);
+  const [rate,      setRate]      = useLocalState('cl-rate',    6.5);
+  const [term,      setTerm]      = useLocalState('cl-term',    60);
+  const [tradeIn,   setTradeIn]   = useLocalState('cl-tradein', 0);
+  const [extra,     setExtra]     = useLocalState('cl-extra',   0);
+  const [showTable, setShowTable] = useLocalState('cl-table',   false);
 
   const principal = Math.max(0, price - down - tradeIn);
   const payment   = useMemo(() => monthlyPayment(principal, rate, term), [principal, rate, term]);
@@ -18,17 +37,19 @@ export default function CarLoan() {
   const totalPaid = payment * term;
   const totalInt  = totalPaid - principal;
 
+  const earlyResult = useMemo(
+    () => extra > 0 ? calcEarlyPayoff(principal, rate, payment, extra) : null,
+    [principal, rate, payment, extra]
+  );
+
+  /* Show one data point per year for clean x-axis */
   const chartData = schedule
-    .filter((_, i) => i % 3 === 0 || i === schedule.length - 1)
-    .map(r => ({
-      month: r.month,
-      [t('car.balance')]: +r.balance.toFixed(0),
-    }));
+    .filter((_, i) => (i + 1) % 12 === 0 || i === schedule.length - 1)
+    .map(r => ({ month: r.month, [t('car.balance')]: +r.balance.toFixed(0) }));
 
   const termLabel = (n) => {
     const yrs = n / 12;
-    const yrWord = yrs === 1 ? t('car.yr') : t('car.yrs');
-    return `${n} ${t('car.months')} (${yrs} ${yrWord})`;
+    return `${n} ${t('car.months')} (${yrs} ${yrs === 1 ? t('car.yr') : t('car.yrs')})`;
   };
 
   return (
@@ -66,6 +87,34 @@ export default function CarLoan() {
               ))}
             </select>
           </div>
+
+          <div className="divider" />
+
+          <div className="field">
+            <label>{t('car.extraPmt')}</label>
+            <input type="number" value={extra} min={0} step={25} onChange={e => setExtra(+e.target.value)} />
+          </div>
+
+          {earlyResult && (
+            <div style={{ background:'#eafaf1', border:'1.5px solid var(--success)', borderRadius:10, padding:'1rem 1.25rem' }}>
+              <div style={{ fontWeight:700, color:'var(--success)', marginBottom:'.6rem', fontSize:'.95rem' }}>
+                {t('car.earlyPayoff')} (+{fmtUSD2(extra)}/mo)
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'.75rem' }}>
+                <div>
+                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:600, textTransform:'uppercase', letterSpacing:'.04em' }}>{t('car.monthsSaved')}</div>
+                  <div style={{ fontWeight:800, fontSize:'1.1rem', color:'var(--navy)' }}>{term - earlyResult.months}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:600, textTransform:'uppercase', letterSpacing:'.04em' }}>{t('car.interestSaved')}</div>
+                  <div style={{ fontWeight:800, fontSize:'1.1rem', color:'var(--success)' }}>{fmtUSD2(totalInt - earlyResult.totalInterest)}</div>
+                </div>
+              </div>
+              <div style={{ fontSize:'.8rem', color:'var(--muted)', marginTop:'.5rem' }}>
+                {t('car.paysOffIn').replace('{months}', earlyResult.months)}
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
@@ -95,7 +144,7 @@ export default function CarLoan() {
 
           <div className="card">
             <div className="card-title"><span className="icon">📊</span> {t('car.balanceOverTime')}</div>
-            <div className="chart-wrap" style={{height: 200}}>
+            <div className="chart-wrap" style={{height:200}}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{top:5, right:10, left:0, bottom:0}}>
                   <defs>
@@ -106,7 +155,7 @@ export default function CarLoan() {
                   </defs>
                   <XAxis dataKey="month" tick={{fontSize:11}} label={{value: t('car.month'), position:'insideBottom', offset:-2, fontSize:11}} />
                   <YAxis tickFormatter={v => '$'+Math.round(v/1000)+'k'} tick={{fontSize:11}} width={50} />
-                  <Tooltip formatter={(v) => fmtUSD(v)} labelFormatter={l => `${t('car.month')} ${l}`} />
+                  <Tooltip formatter={v => fmtUSD(v)} labelFormatter={l => `${t('car.month')} ${l}`} />
                   <Area type="monotone" dataKey={t('car.balance')} stroke="#1a5276" fill="url(#balGrad)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>

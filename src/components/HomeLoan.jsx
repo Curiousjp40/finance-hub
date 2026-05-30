@@ -1,27 +1,30 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { monthlyPayment, amortizeSchedule, fmtUSD, fmtUSD2 } from '../utils/finance';
 import { useT } from '../LanguageContext';
+import { useLocalState } from '../utils/useLocalState';
 
 export default function HomeLoan() {
   const t = useT();
-  const [price,     setPrice]     = useState(400000);
-  const [down,      setDown]      = useState(80000);
-  const [rate,      setRate]      = useState(6.8);
-  const [term,      setTerm]      = useState(360);
-  const [tax,       setTax]       = useState(350);
-  const [insurance, setInsurance] = useState(150);
-  const [pmi,       setPmi]       = useState(0);
-  const [showTable, setShowTable] = useState(false);
+  const [price,     setPrice]     = useLocalState('hl-price',     400000);
+  const [down,      setDown]      = useLocalState('hl-down',      80000);
+  const [rate,      setRate]      = useLocalState('hl-rate',      6.8);
+  const [term,      setTerm]      = useLocalState('hl-term',      360);
+  const [tax,       setTax]       = useLocalState('hl-tax',       350);
+  const [insurance, setInsurance] = useLocalState('hl-insurance', 150);
+  const [hoa,       setHoa]       = useLocalState('hl-hoa',       0);
+  const [pmi,       setPmi]       = useLocalState('hl-pmi',       0);
+  const [showTable, setShowTable] = useLocalState('hl-table',     false);
 
-  const principal = Math.max(0, price - down);
-  const ltv       = price > 0 ? (principal / price) * 100 : 0;
-  const payment   = useMemo(() => monthlyPayment(principal, rate, term), [principal, rate, term]);
-  const schedule  = useMemo(() => amortizeSchedule(principal, rate, term), [principal, rate, term]);
-  const totalPITI = payment + tax + insurance + pmi;
-  const totalPaid = payment * term;
-  const totalInt  = totalPaid - principal;
-  const downPct   = price > 0 ? ((down / price) * 100).toFixed(1) : 0;
+  const principal  = Math.max(0, price - down);
+  const ltv        = price > 0 ? (principal / price) * 100 : 0;
+  const payment    = useMemo(() => monthlyPayment(principal, rate, term), [principal, rate, term]);
+  const schedule   = useMemo(() => amortizeSchedule(principal, rate, term), [principal, rate, term]);
+  const totalPITI  = payment + tax + insurance + hoa + pmi;
+  const totalPaid  = payment * term;
+  const totalInt   = totalPaid - principal;
+  const downPct    = price > 0 ? ((down / price) * 100).toFixed(1) : 0;
+  const estimatedPmi = +(principal * 0.008 / 12).toFixed(0);
 
   const equityKey  = t('home.equity');
   const balanceKey = t('home.balance');
@@ -67,8 +70,10 @@ export default function HomeLoan() {
               <option value={120}>{t('home.years10')}</option>
             </select>
           </div>
+
           <div className="divider" />
-          <div className="three-col">
+
+          <div className="two-col">
             <div className="field">
               <label>{t('home.propertyTax')}</label>
               <input type="number" value={tax} min={0} onChange={e => setTax(+e.target.value)} />
@@ -78,12 +83,25 @@ export default function HomeLoan() {
               <input type="number" value={insurance} min={0} onChange={e => setInsurance(+e.target.value)} />
             </div>
             <div className="field">
-              <label>{t('home.pmi')} {ltv > 80 && <span style={{color:'var(--danger)',fontWeight:700}}>⚠</span>}</label>
+              <label>{t('home.hoa')}</label>
+              <input type="number" value={hoa} min={0} onChange={e => setHoa(+e.target.value)} />
+            </div>
+            <div className="field">
+              <label>
+                {t('home.pmi')}
+                {ltv > 80 && <span style={{color:'var(--danger)', fontWeight:700, marginLeft:'.35rem'}}>⚠</span>}
+              </label>
               <input type="number" value={pmi} min={0} onChange={e => setPmi(+e.target.value)} />
+              {ltv > 80 && (
+                <div style={{ fontSize:'.78rem', color:'var(--accent)', marginTop:'.3rem' }}>
+                  {t('home.pmiHint').replace('{pmi}', fmtUSD2(estimatedPmi))}
+                </div>
+              )}
             </div>
           </div>
+
           {ltv > 80 && (
-            <p style={{fontSize:'.82rem', color:'var(--danger)', marginTop:'-.5rem'}}>
+            <p style={{fontSize:'.82rem', color:'var(--danger)', marginTop:'-.25rem'}}>
               {t('home.ltvWarning').replace('{ltv}', ltv.toFixed(1))}
             </p>
           )}
@@ -112,11 +130,27 @@ export default function HomeLoan() {
                 <div className="rb-value" style={{color:'var(--danger)'}}>{fmtUSD(totalInt)}</div>
               </div>
             </div>
+
+            {/* Monthly breakdown pills */}
+            <div style={{ marginTop:'1rem', display:'flex', flexWrap:'wrap', gap:'.5rem' }}>
+              {[
+                { label:'P&I',              val: payment,   color:'#1a5276' },
+                { label: t('home.propertyTax').replace(' /mo',''), val: tax,       color:'#8e44ad' },
+                { label: t('home.insurance').replace(' /mo',''),   val: insurance, color:'#e67e22' },
+                hoa > 0  && { label:'HOA',   val: hoa,  color:'#16a085' },
+                pmi > 0  && { label:'PMI',   val: pmi,  color:'#c0392b' },
+              ].filter(Boolean).map((item, i) => (
+                <div key={i} style={{ background:`${item.color}18`, border:`1px solid ${item.color}40`, borderRadius:20, padding:'.25rem .75rem', fontSize:'.78rem' }}>
+                  <span style={{ color: item.color, fontWeight:700 }}>{item.label}</span>
+                  <span style={{ color:'var(--text)', marginLeft:'.35rem' }}>{fmtUSD2(item.val)}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="card">
             <div className="card-title"><span className="icon">📈</span> {t('home.equityGrowth')}</div>
-            <div className="chart-wrap" style={{height: 200}}>
+            <div className="chart-wrap" style={{height:200}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={yearlyData} margin={{top:5, right:10, left:0, bottom:0}}>
                   <XAxis dataKey="year" tick={{fontSize:10}} />

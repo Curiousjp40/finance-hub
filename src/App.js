@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import './styles.css';
 import { LanguageProvider, LanguageContext, useT } from './LanguageContext';
 import CarLoan      from './components/CarLoan';
@@ -15,14 +15,18 @@ function AppInner() {
   const t = useT();
 
   const TABS = [
-    { id: 'car',    label: t('nav.car')    },
-    { id: 'home',   label: t('nav.home')   },
-    { id: 'budget', label: t('nav.budget') },
-    { id: 'tax',    label: t('nav.tax')    },
-    { id: 'cc',     label: t('nav.cc')     },
+    { id: 'car',        label: t('nav.car')        },
+    { id: 'home',       label: t('nav.home')       },
+    { id: 'budget',     label: t('nav.budget')     },
+    { id: 'tax',        label: t('nav.tax')        },
+    { id: 'cc',         label: t('nav.cc')         },
     { id: 'amex',       label: t('nav.amex')       },
     { id: 'retirement', label: t('nav.retirement') },
   ];
+
+  useEffect(() => {
+    document.title = `${t(`titles.${tab}`)} · FinanceHub`;
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="app">
@@ -63,18 +67,17 @@ function AppInner() {
       <main className="main">
         <h1 className="page-title">{t(`titles.${tab}`)}</h1>
 
-        {tab === 'car'    && <CarLoan />}
-        {tab === 'home'   && <HomeLoan />}
-        {tab === 'budget' && <Budget />}
-        {tab === 'tax'    && <NetIncome />}
-        {tab === 'cc'     && <CreditCard />}
+        {tab === 'car'        && <CarLoan />}
+        {tab === 'home'       && <HomeLoan />}
+        {tab === 'budget'     && <Budget />}
+        {tab === 'tax'        && <NetIncome />}
+        {tab === 'cc'         && <CreditCard />}
         {tab === 'amex'       && <AmexReferral />}
         {tab === 'retirement' && <Retirement />}
       </main>
 
       <footer className="footer">
-        {t('footer')}{' '}
-        <a href="https://www.americanexpress.com" target="_blank" rel="noreferrer">AmericanExpress.com</a>
+        {t('footer')}
       </footer>
     </div>
   );

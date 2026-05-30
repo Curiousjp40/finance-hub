@@ -1,14 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { creditCardPayoff, fmtUSD, fmtUSD2 } from '../utils/finance';
 import { useT } from '../LanguageContext';
+import { useLocalState } from '../utils/useLocalState';
 
 export default function CreditCard() {
   const t = useT();
-  const [balance, setBalance] = useState(8500);
-  const [apr,     setApr]     = useState(22.99);
-  const [payment, setPayment] = useState(300);
-  const [extra,   setExtra]   = useState(100);
+  const [balance, setBalance] = useLocalState('cc-balance', 8500);
+  const [apr,     setApr]     = useLocalState('cc-apr',     22.99);
+  const [payment, setPayment] = useLocalState('cc-payment', 300);
+  const [extra,   setExtra]   = useLocalState('cc-extra',   100);
 
   const r       = apr / 100 / 12;
   const base    = useMemo(() => creditCardPayoff(balance, apr, payment),         [balance, apr, payment]);

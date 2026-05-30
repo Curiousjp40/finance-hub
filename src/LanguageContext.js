@@ -86,6 +86,11 @@ const translations = {
       payment:      'Payment',
       principal:    'Principal',
       interest:     'Interest',
+      extraPmt:     'Extra Monthly Payment',
+      earlyPayoff:  'With Extra Payment',
+      monthsSaved:  'Months Saved',
+      interestSaved:'Interest Saved',
+      paysOffIn:    'Pays off in {months} months',
     },
 
     home: {
@@ -101,7 +106,9 @@ const translations = {
       years10:        '10 Years',
       propertyTax:    'Property Tax /mo',
       insurance:      'Insurance /mo',
+      hoa:            'HOA /mo',
       pmi:            'PMI /mo',
+      pmiHint:        'Est. {pmi}/mo at 0.8% annual rate',
       ltvWarning:     'LTV is {ltv}% — lenders typically require PMI above 80% LTV.',
       paymentBreakdown: 'Monthly Payment Breakdown',
       totalPITI:      'Total PITI /mo',
@@ -139,6 +146,15 @@ const translations = {
       overspend:     "You're spending {amt}/mo more than you earn. Review your expenses.",
       breakdown:     'Spending Breakdown',
       defaultCats:   ['Housing','Transportation','Groceries','Utilities','Dining Out','Healthcare','Entertainment','Savings','Clothing','Other'],
+      rule2030:      '50/30/20 Rule',
+      needs:         'Needs',
+      wants:         'Wants',
+      saves:         'Savings Goal',
+      needsHint:     'Housing, utilities, groceries, healthcare, transport',
+      wantsHint:     'Dining out, entertainment, clothing, misc',
+      savingsHint:   'Savings, investments, emergency fund',
+      ruleTarget:    'Target',
+      ruleActual:    'Actual',
     },
 
     tax: {
@@ -276,6 +292,8 @@ const translations = {
       accountsSummary:  'Account Breakdown',
       noAccounts:       'Add at least one account to see projections.',
       total:            'Total',
+      socialSecurity:   'Monthly Social Security Estimate',
+      socialSecuritySub:'reduces required portfolio size',
     },
   },
 
@@ -332,6 +350,11 @@ const translations = {
       payment:      'Pago',
       principal:    'Capital',
       interest:     'Interés',
+      extraPmt:     'Pago Mensual Adicional',
+      earlyPayoff:  'Con Pago Adicional',
+      monthsSaved:  'Meses Ahorrados',
+      interestSaved:'Interés Ahorrado',
+      paysOffIn:    'Se paga en {months} meses',
     },
 
     home: {
@@ -347,7 +370,9 @@ const translations = {
       years10:        '10 Años',
       propertyTax:    'Impuesto Predial /mes',
       insurance:      'Seguro /mes',
+      hoa:            'HOA /mes',
       pmi:            'PMI /mes',
+      pmiHint:        'Est. {pmi}/mes (tasa anual 0.8%)',
       ltvWarning:     'El LTV es {ltv}% — los prestamistas suelen exigir PMI si supera el 80%.',
       paymentBreakdown: 'Desglose del Pago Mensual',
       totalPITI:      'PITI Total /mes',
@@ -385,6 +410,15 @@ const translations = {
       overspend:     'Estás gastando {amt}/mes más de lo que ganas. Revisa tus gastos.',
       breakdown:     'Desglose de Gastos',
       defaultCats:   ['Vivienda','Transporte','Comestibles','Servicios','Restaurantes','Salud','Entretenimiento','Ahorros','Ropa','Otros'],
+      rule2030:      'Regla 50/30/20',
+      needs:         'Necesidades',
+      wants:         'Gustos',
+      saves:         'Meta de Ahorro',
+      needsHint:     'Vivienda, servicios, comestibles, salud, transporte',
+      wantsHint:     'Restaurantes, entretenimiento, ropa, varios',
+      savingsHint:   'Ahorro, inversiones, fondo de emergencia',
+      ruleTarget:    'Meta',
+      ruleActual:    'Real',
     },
 
     tax: {
@@ -522,6 +556,8 @@ const translations = {
       accountsSummary:  'Desglose de Cuentas',
       noAccounts:       'Agrega al menos una cuenta para ver las proyecciones.',
       total:            'Total',
+      socialSecurity:   'Estimado Mensual del Seguro Social',
+      socialSecuritySub:'reduce el tamaño requerido del portafolio',
     },
   },
 };

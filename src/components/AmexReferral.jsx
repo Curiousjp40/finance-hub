@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useT, useLang } from '../LanguageContext';
+import { useLocalState } from '../utils/useLocalState';
 
 const CARDS = [
   {
@@ -177,7 +178,7 @@ const CARDS = [
 export default function AmexReferral() {
   const t    = useT();
   const lang = useLang();
-  const [referralLink, setReferralLink] = useState('');
+  const [referralLink, setReferralLink] = useLocalState('amex-link', '');
   const [copied,       setCopied]       = useState(false);
 
   function copyLink() {
@@ -187,6 +188,10 @@ export default function AmexReferral() {
       setTimeout(() => setCopied(false), 2000);
     });
   }
+
+  const isValidUrl = referralLink && (() => {
+    try { new URL(referralLink); return true; } catch { return false; }
+  })();
 
   return (
     <div>
@@ -205,12 +210,19 @@ export default function AmexReferral() {
             placeholder={t('amex.linkPlaceholder')}
             value={referralLink}
             onChange={e => setReferralLink(e.target.value)}
-            style={{flex:1, minWidth:260, padding:'.65rem 1rem', border:'1.5px solid var(--border)', borderRadius:8, fontSize:'.9rem'}}
+            style={{
+              flex:1, minWidth:260, padding:'.65rem 1rem',
+              border:`1.5px solid ${referralLink && !isValidUrl ? 'var(--danger)' : 'var(--border)'}`,
+              borderRadius:8, fontSize:'.9rem',
+            }}
           />
-          <button className="btn btn-primary" onClick={copyLink} disabled={!referralLink}>
+          <button className="btn btn-primary" onClick={copyLink} disabled={!isValidUrl}>
             {copied ? t('amex.copiedBtn') : t('amex.copyBtn')}
           </button>
         </div>
+        {referralLink && !isValidUrl && (
+          <p style={{fontSize:'.78rem', color:'var(--danger)', marginTop:'.4rem'}}>Please enter a valid URL.</p>
+        )}
         <p style={{fontSize:'.78rem', color:'var(--muted)', marginTop:'.6rem'}}>{t('amex.linkTip')}</p>
       </div>
 
@@ -253,7 +265,10 @@ export default function AmexReferral() {
                 💛 {refNote}
               </div>
 
-              <div className="amex-card-cta" onClick={() => window.open('https://www.americanexpress.com/en-us/referral/', '_blank')}>
+              <div
+                className="amex-card-cta"
+                onClick={() => window.open('https://www.americanexpress.com/en-us/referral/', '_blank', 'noopener,noreferrer')}
+              >
                 <span>{t('amex.getLink')}</span>
                 <span style={{fontSize:'.75rem', color:'var(--muted)'}}>amex.com</span>
               </div>
