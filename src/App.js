@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import './styles.css';
+import { LanguageProvider, LanguageContext, useT } from './LanguageContext';
 import CarLoan      from './components/CarLoan';
 import HomeLoan     from './components/HomeLoan';
 import Budget       from './components/Budget';
@@ -7,18 +8,19 @@ import NetIncome    from './components/NetIncome';
 import CreditCard   from './components/CreditCard';
 import AmexReferral from './components/AmexReferral';
 
-const TABS = [
-  { id: 'car',    label: '🚗 Car Loan',       title: 'Car Loan Calculator' },
-  { id: 'home',   label: '🏠 Home Loan',       title: 'Home Loan Calculator' },
-  { id: 'budget', label: '📝 Budget Planner',  title: 'Budget Planner' },
-  { id: 'tax',    label: '💼 Net Income',       title: 'Net Income After Taxes' },
-  { id: 'cc',     label: '💳 Credit Card',      title: 'Credit Card Payoff' },
-  { id: 'amex',   label: '⭐ Amex Referrals',   title: 'American Express Referrals' },
-];
-
-export default function App() {
+function AppInner() {
   const [tab, setTab] = useState('car');
-  const active = TABS.find(t => t.id === tab);
+  const { toggle } = useContext(LanguageContext);
+  const t = useT();
+
+  const TABS = [
+    { id: 'car',    label: t('nav.car')    },
+    { id: 'home',   label: t('nav.home')   },
+    { id: 'budget', label: t('nav.budget') },
+    { id: 'tax',    label: t('nav.tax')    },
+    { id: 'cc',     label: t('nav.cc')     },
+    { id: 'amex',   label: t('nav.amex')   },
+  ];
 
   return (
     <div className="app">
@@ -26,24 +28,38 @@ export default function App() {
         <div className="header-inner">
           <div className="logo">
             <span className="logo-icon">💰</span>
-            FinanceHub
+            {t('nav.brand')}
           </div>
           <nav className="nav">
-            {TABS.map(t => (
+            {TABS.map(tb => (
               <button
-                key={t.id}
-                className={`nav-btn${tab === t.id ? ' active' : ''}`}
-                onClick={() => setTab(t.id)}
+                key={tb.id}
+                className={`nav-btn${tab === tb.id ? ' active' : ''}`}
+                onClick={() => setTab(tb.id)}
               >
-                {t.label}
+                {tb.label}
               </button>
             ))}
+            <button
+              className="nav-btn lang-toggle"
+              onClick={toggle}
+              title={t('nav.langLabel')}
+              style={{
+                marginLeft: '.5rem',
+                borderLeft: '1px solid rgba(255,255,255,.25)',
+                paddingLeft: '1rem',
+                fontWeight: 700,
+                color: 'var(--gold)',
+              }}
+            >
+              🌐 {t('nav.langBtn')}
+            </button>
           </nav>
         </div>
       </header>
 
       <main className="main">
-        <h1 className="page-title">{active.title}</h1>
+        <h1 className="page-title">{t(`titles.${tab}`)}</h1>
 
         {tab === 'car'    && <CarLoan />}
         {tab === 'home'   && <HomeLoan />}
@@ -54,9 +70,17 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        FinanceHub · Educational estimates only · Not financial advice ·{' '}
+        {t('footer')}{' '}
         <a href="https://www.americanexpress.com" target="_blank" rel="noreferrer">AmericanExpress.com</a>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppInner />
+    </LanguageProvider>
   );
 }
