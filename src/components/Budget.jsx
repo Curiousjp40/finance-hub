@@ -1,9 +1,10 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Sector } from 'recharts';
 import { fmtUSD } from '../utils/finance';
 import { useT, useLang } from '../LanguageContext';
 import { useLocalState } from '../utils/useLocalState';
 import { parseCSV, makeHash, BANK_NAMES } from '../utils/csvParser';
+import { parsePDF } from '../utils/pdfParser';
 
 const CAT_META = [
   { id: 'housing',       icon: '🏠', color: '#1a5276', type: 'need', defaultLimit: 1500 },
@@ -34,6 +35,51 @@ function uid() { return Math.random().toString(36).slice(2, 9) + Date.now().toSt
 function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ── NumericInput ─────────────────────────────────────────────
+   Controlled numeric input that avoids React's type="number"
+   quirks (decimal mid-type coercion, Chrome/Firefox differences).
+   Stores display text locally; syncs to parent as a number.
+────────────────────────────────────────────────────────────── */
+function NumericInput({ value, onChange, className, placeholder, onBlur: externalBlur, ...rest }) {
+  const numVal = Number(value) || 0;
+  const [text, setText] = useState(() => numVal > 0 ? String(numVal) : '');
+
+  useEffect(() => {
+    setText(current => {
+      const parsed = parseFloat(current);
+      // Keep current display if it parses to the same number (handles "5.", "5.50", etc.)
+      if (!isNaN(parsed) && parsed === numVal) return current;
+      if ((current === '' || current === '.') && numVal === 0) return current;
+      return numVal > 0 ? String(numVal) : '';
+    });
+  }, [numVal]);
+
+  return (
+    <input
+      {...rest}
+      className={className}
+      type="text"
+      inputMode="decimal"
+      value={text}
+      placeholder={placeholder}
+      onChange={e => {
+        const raw = e.target.value;
+        // Allow only digits, one decimal point, and optional leading minus
+        if (raw !== '' && !/^-?\d*\.?\d*$/.test(raw)) return;
+        setText(raw);
+        const n = parseFloat(raw);
+        if (!isNaN(n)) onChange(n);
+        else if (raw === '') onChange(0);
+      }}
+      onBlur={e => {
+        // Normalize display on blur (removes trailing dot, etc.)
+        setText(numVal > 0 ? String(numVal) : '');
+        externalBlur?.(e);
+      }}
+    />
+  );
 }
 
 function renderActiveShape(props) {
@@ -232,7 +278,7 @@ export default function Budget() {
   }
 
   function updateLimit(catId, val) {
-    setCatLimits(prev => ({ ...prev, [catId]: parseFloat(val) || 0 }));
+    setCatLimits(prev => ({ ...prev, [catId]: Number(val) || 0 }));
   }
 
   function addCustomCat() {
@@ -242,18 +288,28 @@ export default function Budget() {
     setNewCatName('');
   }
 
-  // ── CSV Import ────────────────────────────────────────────────
-  function handleFile(file) {
+  // ── CSV / PDF Import ─────────────────────────────────────────
+  async function handleFile(file) {
     if (!file) return;
-    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') {
-      setImportError(t('budget.notCsvError'));
+    const name   = file.name.toLowerCase();
+    const isPDF  = name.endsWith('.pdf') || file.type === 'application/pdf';
+    const isCSV  = name.endsWith('.csv') || name.endsWith('.txt') || file.type === 'text/csv';
+    if (!isPDF && !isCSV) {
+      setImportError(t('budget.notFileError'));
       return;
     }
     setImportError(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const { bank, transactions, error } = parseCSV(e.target.result);
-      if (error === 'empty' || !transactions.length) {
+    try {
+      let result;
+      if (isPDF) {
+        const buf = await file.arrayBuffer();
+        result = await parsePDF(buf);
+      } else {
+        const text = await file.text();
+        result = parseCSV(text);
+      }
+      const { bank, transactions, error } = result;
+      if (error || !transactions.length) {
         setImportError(t('budget.parseError'));
         return;
       }
@@ -263,11 +319,11 @@ export default function Budget() {
         const isDuplicate = existingHashes.has(hash);
         return { ...tx, hash, isDuplicate, include: !isDuplicate };
       });
-      setImportPreview({ bank, rows });
+      setImportPreview({ bank, rows, isPDF });
       setImportDone(null);
-    };
-    reader.onerror = () => setImportError(t('budget.parseError'));
-    reader.readAsText(file);
+    } catch {
+      setImportError(t('budget.parseError'));
+    }
   }
 
   function updateImportRow(idx, field, value) {
@@ -304,8 +360,7 @@ export default function Budget() {
         <div className="budget-summary-item">
           <div className="bsi-label">{t('budget.monthlyIncome')}</div>
           <div className="bsi-value">{fmtUSD(income)}</div>
-          <input className="bsi-edit-input" type="number" min={0} value={income || ''}
-            placeholder="5000" onChange={e => setIncome(+e.target.value || 0)} />
+          <NumericInput className="bsi-edit-input" value={income} onChange={setIncome} placeholder="5000" />
         </div>
         <div className="budget-summary-item">
           <div className="bsi-label">{t('budget.totalSpent')}</div>
@@ -358,9 +413,9 @@ export default function Budget() {
                   <div className="bcc-meta">
                     {cat.limit > 0 && <span style={{ color: indColor, fontWeight:700 }}>{pct.toFixed(0)}%</span>}
                     {editingLimit === cat.id ? (
-                      <input className="bcc-limit-input" type="number" min={0}
-                        defaultValue={cat.limit || ''} autoFocus
-                        onBlur={e => { updateLimit(cat.id, e.target.value); setEditingLimit(null); }}
+                      <NumericInput className="bcc-limit-input" value={cat.limit || 0} autoFocus
+                        onChange={v => updateLimit(cat.id, v)}
+                        onBlur={() => setEditingLimit(null)}
                         onKeyDown={e => e.key === 'Enter' && e.target.blur()}
                         onClick={e => e.stopPropagation()} />
                     ) : (
@@ -580,7 +635,7 @@ export default function Budget() {
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={e => e.preventDefault()}
                 onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); }}>
-                <input ref={fileInputRef} type="file" accept=".csv,.txt"
+                <input ref={fileInputRef} type="file" accept=".csv,.txt,.pdf"
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
                   style={{ display:'none' }} />
                 <div style={{ fontSize:'2.75rem', marginBottom:'.5rem' }}>📂</div>
@@ -604,6 +659,11 @@ export default function Budget() {
           {/* Step 2: Preview */}
           {importPreview && (
             <div>
+              {importPreview.isPDF && (
+                <div style={{ marginBottom:'1rem', padding:'.65rem 1rem', background:'#fffbeb', border:'1.5px solid #d97706', borderRadius:10, fontSize:'.83rem', color:'#92400e' }}>
+                  ℹ️ {t('budget.pdfNote')}
+                </div>
+              )}
               {/* Stats bar */}
               <div className="csv-stats-bar">
                 <div className="csb-item">
