@@ -935,3 +935,88 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   .bcal-day             { min-height: 42px; }
   .bcal-num             { font-size: .72rem; width: 18px; height: 18px; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   CSV Import UI
+═══════════════════════════════════════════════════════════ */
+
+/* Dropzone */
+.csv-dropzone {
+  border: 2.5px dashed var(--border); border-radius: 14px;
+  padding: 2.5rem 1.5rem; text-align: center;
+  cursor: pointer; transition: var(--transition);
+  background: var(--light); margin-bottom: 1.25rem;
+}
+.csv-dropzone:hover { border-color: var(--accent); background: #eef4ff; }
+
+/* Stats bar */
+.csv-stats-bar {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: .75rem; margin-bottom: 1rem;
+}
+.csb-item {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: .9rem 1rem; text-align: center;
+  box-shadow: var(--shadow);
+}
+.csb-label { font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .35rem; }
+.csb-val   { font-size: 1.4rem; font-weight: 900; color: var(--navy); }
+
+/* Category totals */
+.csv-cat-totals { display: flex; flex-direction: column; gap: .4rem; }
+.cct-row {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .45rem .6rem; border-radius: 7px; background: var(--light);
+}
+
+/* Preview table */
+.csv-preview-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+.csv-preview-table {
+  width: 100%; border-collapse: collapse; font-size: .83rem;
+  min-width: 560px;
+}
+.csv-preview-table th {
+  background: var(--light); text-align: left; padding: .55rem .75rem;
+  font-size: .72rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em;
+  border-bottom: 1.5px solid var(--border);
+}
+.csv-preview-table td { padding: .45rem .75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.csv-preview-table tbody tr:last-child td { border-bottom: none; }
+.csv-preview-table tbody tr:hover td { background: #f6f9ff; }
+
+/* Duplicate rows */
+.csv-dup-row td { opacity: .45; }
+.csv-dup-badge { font-size: 1rem; color: var(--muted); cursor: default; }
+
+/* Table cells */
+.csv-cell-date { white-space: nowrap; color: var(--muted); font-size: .8rem; }
+.csv-cell-desc { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.csv-cell-amt  { text-align: right; font-weight: 700; color: var(--navy); white-space: nowrap; }
+
+/* Category dropdown inside table */
+.csv-cat-select {
+  font-size: .78rem; padding: .25rem .4rem;
+  border: 1.5px solid var(--border); border-radius: 6px;
+  background: var(--white); color: var(--text); max-width: 160px;
+}
+
+/* Month header in history */
+.budget-month-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .5rem .25rem; margin-top: .75rem; margin-bottom: .35rem;
+  font-size: .8rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  border-bottom: 1.5px solid var(--border);
+}
+
+/* CSV import responsive */
+@media (max-width: 768px) {
+  .csv-stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .csv-cell-desc { max-width: 140px; }
+  .csv-cat-select { max-width: 120px; }
+}
+@media (max-width: 480px) {
+  .csv-stats-bar { grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .csb-val       { font-size: 1.15rem; }
+}

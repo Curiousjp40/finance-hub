@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Sector } from 'recharts';
 import { fmtUSD } from '../utils/finance';
 import { useT, useLang } from '../LanguageContext';
 import { useLocalState } from '../utils/useLocalState';
+import { parseCSV, makeHash, BANK_NAMES } from '../utils/csvParser';
 
 const CAT_META = [
   { id: 'housing',       icon: '🏠', color: '#1a5276', type: 'need', defaultLimit: 1500 },
@@ -20,6 +21,7 @@ const CAT_META = [
 const TABS = [
   { id: 'overview', icon: '📊' },
   { id: 'expenses', icon: '📝' },
+  { id: 'import',   icon: '📥' },
   { id: 'calendar', icon: '📅' },
   { id: 'networth', icon: '💼' },
 ];
@@ -42,15 +44,9 @@ function renderActiveShape(props) {
         startAngle={startAngle} endAngle={endAngle} fill={fill} />
       <Sector cx={cx} cy={cy} innerRadius={outerRadius + 14} outerRadius={outerRadius + 18}
         startAngle={startAngle} endAngle={endAngle} fill={fill} />
-      <text x={cx} y={cy - 14} textAnchor="middle" fill="#1c2b3a" fontSize={12} fontWeight={700}>
-        {payload.name}
-      </text>
-      <text x={cx} y={cy + 8} textAnchor="middle" fill="#1c2b3a" fontSize={16} fontWeight={800}>
-        {fmtUSD(value)}
-      </text>
-      <text x={cx} y={cy + 26} textAnchor="middle" fill="#6b7c93" fontSize={11}>
-        {(percent * 100).toFixed(1)}%
-      </text>
+      <text x={cx} y={cy - 14} textAnchor="middle" fill="#1c2b3a" fontSize={12} fontWeight={700}>{payload.name}</text>
+      <text x={cx} y={cy + 8}  textAnchor="middle" fill="#1c2b3a" fontSize={16} fontWeight={800}>{fmtUSD(value)}</text>
+      <text x={cx} y={cy + 26} textAnchor="middle" fill="#6b7c93" fontSize={11}>{(percent * 100).toFixed(1)}%</text>
     </g>
   );
 }
@@ -60,11 +56,9 @@ function CalendarGrid({ month, year, expensesByDay, selectedDay, onSelectDay, al
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today       = new Date();
   const isTodayCell = (d) => today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
-
   const cells = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-
   return (
     <div className="budget-cal">
       <div className="budget-cal-header">
@@ -106,7 +100,7 @@ export default function Budget() {
   const t    = useT();
   const lang = useLang();
 
-  // Persistent state
+  // ── Persistent state ─────────────────────────────────────────
   const [income, setIncome]           = useLocalState('budget-income',       5000);
   const [catLimits, setCatLimits]     = useLocalState('budget-cat-limits',   {});
   const [expenses, setExpenses]       = useLocalState('budget-expenses',     []);
@@ -114,7 +108,7 @@ export default function Budget() {
   const [assets, setAssets]           = useLocalState('budget-assets',       []);
   const [liabilities, setLiabilities] = useLocalState('budget-liabilities',  []);
 
-  // UI state
+  // ── UI state ─────────────────────────────────────────────────
   const [activeTab, setActiveTab]           = useState('overview');
   const [activePieIdx, setActivePieIdx]     = useState(null);
   const [highlightedCat, setHighlightedCat] = useState(null);
@@ -127,16 +121,20 @@ export default function Budget() {
   const [assetForm, setAssetForm]           = useState({ name: '', value: '' });
   const [liabForm, setLiabForm]             = useState({ name: '', value: '' });
 
-  // Category list (built-in + custom)
-  const catNames = t('budget.catNames');
+  // ── Import state ─────────────────────────────────────────────
+  const fileInputRef                        = useRef(null);
+  const [importPreview, setImportPreview]   = useState(null); // { bank, rows[] }
+  const [importDone, setImportDone]         = useState(null); // { count }
+  const [importError, setImportError]       = useState(null);
+
+  // ── Category list ─────────────────────────────────────────────
+  const catNames   = t('budget.catNames');
   const getCatName = (id) => (catNames && typeof catNames === 'object') ? (catNames[id] ?? id) : id;
 
   const allCats = useMemo(() => [
     ...CAT_META.map(m => ({
-      ...m,
-      name:      getCatName(m.id),
-      limit:     catLimits[m.id] ?? m.defaultLimit,
-      isBuiltIn: true,
+      ...m, name: getCatName(m.id),
+      limit: catLimits[m.id] ?? m.defaultLimit, isBuiltIn: true,
     })),
     ...customCats.map(c => ({
       id: c.id, icon: c.icon ?? '📦', color: c.color ?? '#7f8c8d',
@@ -145,7 +143,7 @@ export default function Budget() {
     })),
   ], [catLimits, customCats, lang]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Current-month spending
+  // ── Spending (current month) ──────────────────────────────────
   const now       = new Date();
   const thisMonth = now.getMonth();
   const thisYear  = now.getFullYear();
@@ -154,9 +152,8 @@ export default function Budget() {
     const map = {};
     for (const exp of expenses) {
       const d = new Date(exp.date + 'T00:00:00');
-      if (d.getMonth() === thisMonth && d.getFullYear() === thisYear) {
+      if (d.getMonth() === thisMonth && d.getFullYear() === thisYear)
         map[exp.categoryId] = (map[exp.categoryId] ?? 0) + exp.amount;
-      }
     }
     return map;
   }, [expenses, thisMonth, thisYear]);
@@ -168,14 +165,9 @@ export default function Budget() {
   const wants = useMemo(() => allCats.filter(c => c.type === 'want').reduce((s, c) => s + (spentByCat[c.id] ?? 0), 0), [allCats, spentByCat]);
   const saves = useMemo(() => allCats.filter(c => c.type === 'save').reduce((s, c) => s + (spentByCat[c.id] ?? 0), 0), [allCats, spentByCat]);
 
-  const totalAssets      = useMemo(() => assets.reduce((s, a) => s + (Number(a.value) || 0), 0), [assets]);
-  const totalLiabilities = useMemo(() => liabilities.reduce((s, l) => s + (Number(l.value) || 0), 0), [liabilities]);
-  const netWorth         = totalAssets - totalLiabilities;
-
   const pieData = useMemo(() =>
-    allCats
-      .filter(c => (spentByCat[c.id] ?? 0) > 0)
-      .map(c => ({ name: c.name, value: spentByCat[c.id], id: c.id, color: c.color })),
+    allCats.filter(c => (spentByCat[c.id] ?? 0) > 0)
+           .map(c => ({ name: c.name, value: spentByCat[c.id], id: c.id, color: c.color })),
     [allCats, spentByCat]
   );
 
@@ -194,15 +186,16 @@ export default function Budget() {
     return list;
   }, [income, spentByCat, allCats]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Calendar
+  // ── Net worth ─────────────────────────────────────────────────
+  const totalAssets      = useMemo(() => assets.reduce((s, a) => s + (Number(a.value) || 0), 0), [assets]);
+  const totalLiabilities = useMemo(() => liabilities.reduce((s, l) => s + (Number(l.value) || 0), 0), [liabilities]);
+  const netWorth         = totalAssets - totalLiabilities;
+
+  // ── Calendar ──────────────────────────────────────────────────
   const calExpenses = useMemo(() =>
-    expenses.filter(e => {
-      const d = new Date(e.date + 'T00:00:00');
-      return d.getMonth() === calMonth && d.getFullYear() === calYear;
-    }),
+    expenses.filter(e => { const d = new Date(e.date + 'T00:00:00'); return d.getMonth() === calMonth && d.getFullYear() === calYear; }),
     [expenses, calMonth, calYear]
   );
-
   const expensesByDay = useMemo(() => {
     const map = {};
     for (const exp of calExpenses) {
@@ -213,10 +206,24 @@ export default function Budget() {
     return map;
   }, [calExpenses]);
 
+  // ── History (sorted + grouped by month) ───────────────────────
+  const expensesByMonth = useMemo(() => {
+    const sorted = [...expenses].sort((a, b) => (b.date > a.date ? 1 : -1));
+    const groups = {};
+    for (const exp of sorted) {
+      const key = exp.date.slice(0, 7);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(exp);
+    }
+    return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
+  }, [expenses]);
+
+  const MONTH_NAMES = lang === 'es' ? MONTH_ES : MONTH_EN;
+
   function prevMonth() { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); }
   function nextMonth() { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); }
 
-  // Handlers
+  // ── Handlers ─────────────────────────────────────────────────
   function addExpense() {
     const amt = parseFloat(expForm.amount);
     if (!expForm.description.trim() || !expForm.date || isNaN(amt) || amt <= 0) return;
@@ -235,22 +242,70 @@ export default function Budget() {
     setNewCatName('');
   }
 
-  const MONTH_NAMES = lang === 'es' ? MONTH_ES : MONTH_EN;
+  // ── CSV Import ────────────────────────────────────────────────
+  function handleFile(file) {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') {
+      setImportError(t('budget.notCsvError'));
+      return;
+    }
+    setImportError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const { bank, transactions, error } = parseCSV(e.target.result);
+      if (error === 'empty' || !transactions.length) {
+        setImportError(t('budget.parseError'));
+        return;
+      }
+      const existingHashes = new Set(expenses.map(makeHash));
+      const rows = transactions.map(tx => {
+        const hash = makeHash(tx);
+        const isDuplicate = existingHashes.has(hash);
+        return { ...tx, hash, isDuplicate, include: !isDuplicate };
+      });
+      setImportPreview({ bank, rows });
+      setImportDone(null);
+    };
+    reader.onerror = () => setImportError(t('budget.parseError'));
+    reader.readAsText(file);
+  }
 
+  function updateImportRow(idx, field, value) {
+    setImportPreview(prev => ({
+      ...prev,
+      rows: prev.rows.map((r, i) => i === idx ? { ...r, [field]: value } : r),
+    }));
+  }
+
+  function confirmImport() {
+    if (!importPreview) return;
+    const toAdd = importPreview.rows
+      .filter(r => r.include && !r.isDuplicate)
+      .map(r => ({ id: uid(), date: r.date, description: r.description, amount: r.amount, categoryId: r.categoryId }));
+    setExpenses(prev => [...toAdd, ...prev]);
+    setImportPreview(null);
+    setImportDone({ count: toAdd.length });
+  }
+
+  function resetImport() {
+    setImportPreview(null);
+    setImportDone(null);
+    setImportError(null);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  //  RENDER
+  // ─────────────────────────────────────────────────────────────
   return (
     <div className="budget-dashboard">
 
-      {/* ── Summary Bar ─────────────────────────────────────────── */}
+      {/* ── Summary Bar ─────────────────────────────────────── */}
       <div className="budget-summary-bar">
         <div className="budget-summary-item">
           <div className="bsi-label">{t('budget.monthlyIncome')}</div>
           <div className="bsi-value">{fmtUSD(income)}</div>
-          <input
-            className="bsi-edit-input"
-            type="number" min={0} value={income || ''}
-            placeholder="5000"
-            onChange={e => setIncome(+e.target.value || 0)}
-          />
+          <input className="bsi-edit-input" type="number" min={0} value={income || ''}
+            placeholder="5000" onChange={e => setIncome(+e.target.value || 0)} />
         </div>
         <div className="budget-summary-item">
           <div className="bsi-label">{t('budget.totalSpent')}</div>
@@ -266,20 +321,17 @@ export default function Budget() {
         </div>
       </div>
 
-      {/* ── Tabs ────────────────────────────────────────────────── */}
+      {/* ── Tabs ──────────────────────────────────────────────── */}
       <div className="budget-tabs">
         {TABS.map(({ id, icon }) => (
-          <button
-            key={id}
-            className={`budget-tab${activeTab === id ? ' active' : ''}`}
-            onClick={() => setActiveTab(id)}
-          >
+          <button key={id} className={`budget-tab${activeTab === id ? ' active' : ''}`}
+            onClick={() => setActiveTab(id)}>
             {icon} {t(`budget.tab_${id}`)}
           </button>
         ))}
       </div>
 
-      {/* ── OVERVIEW ─────────────────────────────────────────────── */}
+      {/* ══════════════════════ OVERVIEW ════════════════════════ */}
       {activeTab === 'overview' && (
         <>
           <div className="budget-cats-grid">
@@ -289,12 +341,9 @@ export default function Budget() {
               const indColor = pct >= 100 ? 'var(--danger)' : pct >= 75 ? '#d97706' : 'var(--success)';
               const isHL     = highlightedCat === cat.id;
               return (
-                <div
-                  key={cat.id}
-                  className={`budget-cat-card${isHL ? ' hl' : ''}`}
+                <div key={cat.id} className={`budget-cat-card${isHL ? ' hl' : ''}`}
                   style={{ borderLeftColor: cat.color }}
-                  onClick={() => setHighlightedCat(isHL ? null : cat.id)}
-                >
+                  onClick={() => setHighlightedCat(isHL ? null : cat.id)}>
                   <div className="bcc-header">
                     <span className="bcc-icon">{cat.icon}</span>
                     <span className="bcc-name">{cat.name}</span>
@@ -303,63 +352,45 @@ export default function Budget() {
                   <div className="bcc-spent">{fmtUSD(spent)}</div>
                   {cat.limit > 0 && (
                     <div className="bcc-progress-track">
-                      <div className="bcc-progress-fill" style={{ width: `${Math.min(100, pct)}%`, background: indColor }} />
+                      <div className="bcc-progress-fill" style={{ width:`${Math.min(100,pct)}%`, background: indColor }} />
                     </div>
                   )}
                   <div className="bcc-meta">
-                    {cat.limit > 0 && <span style={{ color: indColor, fontWeight: 700 }}>{pct.toFixed(0)}%</span>}
+                    {cat.limit > 0 && <span style={{ color: indColor, fontWeight:700 }}>{pct.toFixed(0)}%</span>}
                     {editingLimit === cat.id ? (
-                      <input
-                        className="bcc-limit-input"
-                        type="number" min={0}
-                        defaultValue={cat.limit || ''}
-                        autoFocus
+                      <input className="bcc-limit-input" type="number" min={0}
+                        defaultValue={cat.limit || ''} autoFocus
                         onBlur={e => { updateLimit(cat.id, e.target.value); setEditingLimit(null); }}
                         onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-                        onClick={e => e.stopPropagation()}
-                      />
+                        onClick={e => e.stopPropagation()} />
                     ) : (
-                      <span
-                        className="bcc-limit-val"
-                        onClick={e => { e.stopPropagation(); setEditingLimit(cat.id); }}
-                      >
+                      <span className="bcc-limit-val"
+                        onClick={e => { e.stopPropagation(); setEditingLimit(cat.id); }}>
                         {cat.limit > 0 ? `${t('budget.of')} ${fmtUSD(cat.limit)}` : `+ ${t('budget.setBudget')}`}
                       </span>
                     )}
                   </div>
                   {!cat.isBuiltIn && (
-                    <button
-                      className="bcc-remove"
-                      onClick={e => { e.stopPropagation(); setCustomCats(prev => prev.filter(c => c.id !== cat.id)); }}
-                    >✕</button>
+                    <button className="bcc-remove"
+                      onClick={e => { e.stopPropagation(); setCustomCats(prev => prev.filter(c => c.id !== cat.id)); }}>✕</button>
                   )}
                 </div>
               );
             })}
-
-            {/* Add category card */}
             <div className="budget-cat-card budget-add-cat-card" onClick={e => e.stopPropagation()}>
               <div className="bcc-add-icon">+</div>
-              <input
-                type="text"
-                placeholder={t('budget.categoryName')}
-                value={newCatName}
+              <input type="text" placeholder={t('budget.categoryName')} value={newCatName}
                 onChange={e => setNewCatName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addCustomCat()}
-                className="bcc-new-input"
-              />
-              <button
-                className="btn btn-primary"
+                className="bcc-new-input" />
+              <button className="btn btn-primary"
                 style={{ width:'100%', marginTop:'.5rem', fontSize:'.82rem', padding:'.45rem' }}
-                onClick={addCustomCat}
-              >
-                {t('budget.addCategory')}
-              </button>
+                onClick={addCustomCat}>{t('budget.addCategory')}</button>
             </div>
           </div>
 
-          {/* 50/30/20 + Pie */}
           <div className="budget-lower-grid">
+            {/* 50/30/20 + Insights */}
             <div className="card">
               <div className="card-title">📐 {t('budget.rule2030')}</div>
               {[
@@ -372,12 +403,9 @@ export default function Budget() {
                 return (
                   <div key={i} style={{ marginBottom:'1.1rem' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'.3rem' }}>
-                      <span style={{ fontWeight:700, fontSize:'.88rem', color: isGood ? 'var(--navy)' : 'var(--danger)' }}>
-                        {row.label}
-                      </span>
+                      <span style={{ fontWeight:700, fontSize:'.88rem', color: isGood ? 'var(--navy)' : 'var(--danger)' }}>{row.label}</span>
                       <span style={{ fontSize:'.85rem', fontWeight:700, color: isGood ? 'var(--success)' : 'var(--danger)' }}>
-                        {fmtUSD(row.actual)}
-                        <span style={{ fontWeight:400, color:'var(--muted)', fontSize:'.78rem' }}> / {fmtUSD(row.target)}</span>
+                        {fmtUSD(row.actual)}<span style={{ fontWeight:400, color:'var(--muted)', fontSize:'.78rem' }}> / {fmtUSD(row.target)}</span>
                       </span>
                     </div>
                     <div style={{ height:10, borderRadius:99, background:'var(--border)', overflow:'hidden' }}>
@@ -386,17 +414,14 @@ export default function Budget() {
                   </div>
                 );
               })}
-
               <div style={{ marginTop:'1.25rem', paddingTop:'1rem', borderTop:'1px solid var(--border)' }}>
-                <div style={{ fontWeight:700, fontSize:'.9rem', color:'var(--navy)', marginBottom:'.75rem' }}>
-                  💡 {t('budget.insightsTitle')}
-                </div>
+                <div style={{ fontWeight:700, fontSize:'.9rem', color:'var(--navy)', marginBottom:'.75rem' }}>💡 {t('budget.insightsTitle')}</div>
                 {insights.map((ins, i) => (
                   <div key={i} style={{
                     padding:'.55rem .85rem', borderRadius:8, marginBottom:'.45rem', fontSize:'.83rem', fontWeight:500,
                     background: ins.type === 'warn' ? '#fff8e6' : ins.type === 'good' ? '#eafaf1' : '#eef4ff',
                     color: ins.type === 'warn' ? '#92400e' : ins.type === 'good' ? '#166534' : '#1e40af',
-                    borderLeft: `3px solid ${ins.type === 'warn' ? '#d97706' : ins.type === 'good' ? '#22c55e' : '#6366f1'}`,
+                    borderLeft:`3px solid ${ins.type === 'warn' ? '#d97706' : ins.type === 'good' ? '#22c55e' : '#6366f1'}`,
                   }}>
                     {ins.type === 'warn' ? '⚠ ' : ins.type === 'good' ? '✅ ' : '💡 '}{ins.text}
                   </div>
@@ -404,6 +429,7 @@ export default function Budget() {
               </div>
             </div>
 
+            {/* Pie chart */}
             <div className="card">
               <div className="card-title">🥧 {t('budget.breakdown')}</div>
               {pieData.length > 0 ? (
@@ -411,27 +437,15 @@ export default function Budget() {
                   <div style={{ height:300 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie
-                          data={pieData}
-                          cx="50%" cy="50%"
-                          innerRadius={72} outerRadius={110}
-                          dataKey="value"
-                          activeIndex={activePieIdx}
-                          activeShape={renderActiveShape}
+                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={72} outerRadius={110}
+                          dataKey="value" activeIndex={activePieIdx} activeShape={renderActiveShape}
                           onMouseEnter={(_, idx) => setActivePieIdx(idx)}
                           onMouseLeave={() => setActivePieIdx(null)}
-                          onClick={(_, idx) => {
-                            const cat = pieData[idx];
-                            setHighlightedCat(h => h === cat.id ? null : cat.id);
-                          }}
-                          style={{ cursor:'pointer' }}
-                        >
+                          onClick={(_, idx) => { const cat = pieData[idx]; setHighlightedCat(h => h === cat.id ? null : cat.id); }}
+                          style={{ cursor:'pointer' }}>
                           {pieData.map((entry, idx) => (
-                            <Cell
-                              key={idx}
-                              fill={entry.color}
-                              opacity={activePieIdx === null || activePieIdx === idx ? 1 : 0.45}
-                            />
+                            <Cell key={idx} fill={entry.color}
+                              opacity={activePieIdx === null || activePieIdx === idx ? 1 : 0.45} />
                           ))}
                         </Pie>
                         <Tooltip formatter={v => fmtUSD(v)} />
@@ -440,14 +454,10 @@ export default function Budget() {
                   </div>
                   <div className="budget-pie-legend">
                     {pieData.map((entry, idx) => (
-                      <div
-                        key={idx}
-                        className="bpl-item"
+                      <div key={idx} className="bpl-item"
                         style={{ opacity: activePieIdx === null || activePieIdx === idx ? 1 : 0.4 }}
-                        onMouseEnter={() => setActivePieIdx(idx)}
-                        onMouseLeave={() => setActivePieIdx(null)}
-                        onClick={() => setHighlightedCat(h => h === entry.id ? null : entry.id)}
-                      >
+                        onMouseEnter={() => setActivePieIdx(idx)} onMouseLeave={() => setActivePieIdx(null)}
+                        onClick={() => setHighlightedCat(h => h === entry.id ? null : entry.id)}>
                         <span className="bpl-dot" style={{ background: entry.color }} />
                         <span className="bpl-name">{entry.name}</span>
                         <span className="bpl-val">{fmtUSD(entry.value)}</span>
@@ -466,98 +476,295 @@ export default function Budget() {
         </>
       )}
 
-      {/* ── EXPENSES ─────────────────────────────────────────────── */}
+      {/* ══════════════════════ EXPENSES ═══════════════════════ */}
       {activeTab === 'expenses' && (
         <div className="two-col" style={{ alignItems:'start' }}>
+          {/* Add form */}
           <div className="card">
             <div className="card-title">➕ {t('budget.addExpense')}</div>
-            <div className="field">
-              <label>{t('budget.date')}</label>
-              <input type="date" value={expForm.date}
-                onChange={e => setExpForm(f => ({ ...f, date: e.target.value }))} />
+            <div className="field"><label>{t('budget.date')}</label>
+              <input type="date" value={expForm.date} onChange={e => setExpForm(f => ({ ...f, date: e.target.value }))} />
             </div>
-            <div className="field">
-              <label>{t('budget.description')}</label>
-              <input type="text" placeholder={t('budget.descPlaceholder')}
-                value={expForm.description}
+            <div className="field"><label>{t('budget.description')}</label>
+              <input type="text" placeholder={t('budget.descPlaceholder')} value={expForm.description}
                 onChange={e => setExpForm(f => ({ ...f, description: e.target.value }))}
                 onKeyDown={e => e.key === 'Enter' && addExpense()} />
             </div>
-            <div className="field">
-              <label>{t('budget.amount')}</label>
-              <input type="number" min={0} step="0.01" placeholder="0.00"
-                value={expForm.amount}
+            <div className="field"><label>{t('budget.amount')}</label>
+              <input type="number" min={0} step="0.01" placeholder="0.00" value={expForm.amount}
                 onChange={e => setExpForm(f => ({ ...f, amount: e.target.value }))}
                 onKeyDown={e => e.key === 'Enter' && addExpense()} />
             </div>
-            <div className="field">
-              <label>{t('budget.category')}</label>
-              <select value={expForm.categoryId}
-                onChange={e => setExpForm(f => ({ ...f, categoryId: e.target.value }))}>
-                {allCats.map(c => (
-                  <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-                ))}
+            <div className="field"><label>{t('budget.category')}</label>
+              <select value={expForm.categoryId} onChange={e => setExpForm(f => ({ ...f, categoryId: e.target.value }))}>
+                {allCats.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
               </select>
             </div>
             <button className="btn btn-primary" style={{ width:'100%', marginTop:'.5rem' }} onClick={addExpense}>
               {t('budget.add')} →
             </button>
+            <div style={{ marginTop:'1.25rem', paddingTop:'1rem', borderTop:'1px solid var(--border)', fontSize:'.82rem', color:'var(--muted)', textAlign:'center' }}>
+              {t('budget.orImportHint')}{' '}
+              <button style={{ background:'none', border:'none', color:'var(--accent)', cursor:'pointer', fontWeight:700, fontSize:'.82rem' }}
+                onClick={() => setActiveTab('import')}>
+                {t('budget.tab_import')} →
+              </button>
+            </div>
           </div>
 
+          {/* Transaction History */}
           <div className="card">
-            <div className="card-title">📋 {t('budget.recentExpenses')}</div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
+              <div className="card-title" style={{ marginBottom:0 }}>📋 {t('budget.history')}</div>
+              {expenses.length > 0 && (
+                <span style={{ fontSize:'.78rem', color:'var(--muted)' }}>
+                  {expenses.length} {t('budget.transactions')}
+                </span>
+              )}
+            </div>
             {expenses.length === 0 ? (
               <div style={{ color:'var(--muted)', fontSize:'.9rem', padding:'2rem 0', textAlign:'center' }}>
-                {t('budget.noExpenses')}
+                {t('budget.noHistory')}
               </div>
             ) : (
               <div className="budget-exp-list">
-                {expenses.map(exp => {
-                  const cat = allCats.find(c => c.id === exp.categoryId) ?? allCats[allCats.length - 1];
+                {expensesByMonth.map(([monthKey, monthExps]) => {
+                  const [y, m] = monthKey.split('-');
+                  const monthName = `${MONTH_NAMES[parseInt(m) - 1]} ${y}`;
+                  const monthTotal = monthExps.reduce((s, e) => s + e.amount, 0);
                   return (
-                    <div key={exp.id} className="budget-exp-row">
-                      <span className="ber-icon">{cat?.icon ?? '📦'}</span>
-                      <div className="ber-info">
-                        <div className="ber-desc">{exp.description}</div>
-                        <div className="ber-meta">
-                          {exp.date} · <span style={{ color: cat?.color ?? 'var(--muted)' }}>{cat?.name}</span>
-                        </div>
+                    <div key={monthKey}>
+                      <div className="budget-month-header">
+                        <span>{monthName}</span>
+                        <span>{fmtUSD(monthTotal)}</span>
                       </div>
-                      <span className="ber-amt">{fmtUSD(exp.amount)}</span>
-                      <button className="ber-del" onClick={() => setExpenses(prev => prev.filter(e => e.id !== exp.id))}>✕</button>
+                      {monthExps.map(exp => {
+                        const cat = allCats.find(c => c.id === exp.categoryId) ?? allCats[allCats.length - 1];
+                        return (
+                          <div key={exp.id} className="budget-exp-row">
+                            <span className="ber-icon">{cat?.icon ?? '📦'}</span>
+                            <div className="ber-info">
+                              <div className="ber-desc">{exp.description}</div>
+                              <div className="ber-meta">{exp.date} · <span style={{ color: cat?.color }}>{cat?.name}</span></div>
+                            </div>
+                            <span className="ber-amt">{fmtUSD(exp.amount)}</span>
+                            <button className="ber-del"
+                              onClick={() => setExpenses(prev => prev.filter(e => e.id !== exp.id))}>✕</button>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
+                <div style={{ display:'flex', justifyContent:'space-between', fontWeight:800, paddingTop:'.75rem', marginTop:'.5rem', borderTop:'2px solid var(--border)', fontSize:'1rem', color:'var(--navy)' }}>
+                  <span>{t('budget.total')}</span>
+                  <span>{fmtUSD(expenses.reduce((s, e) => s + e.amount, 0))}</span>
+                </div>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* ── CALENDAR ─────────────────────────────────────────────── */}
+      {/* ══════════════════════ IMPORT CSV ══════════════════════ */}
+      {activeTab === 'import' && (
+        <div>
+          {/* Step 1: Upload */}
+          {!importPreview && !importDone && (
+            <div className="card">
+              <div className="card-title">📥 {t('budget.importTitle')}</div>
+              <p style={{ color:'var(--muted)', fontSize:'.9rem', marginBottom:'1.5rem', lineHeight:1.6 }}>
+                {t('budget.importDesc')}
+              </p>
+              <div className="csv-dropzone"
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); }}>
+                <input ref={fileInputRef} type="file" accept=".csv,.txt"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }}
+                  style={{ display:'none' }} />
+                <div style={{ fontSize:'2.75rem', marginBottom:'.5rem' }}>📂</div>
+                <div style={{ fontWeight:700, color:'var(--navy)', fontSize:'1.05rem', marginBottom:'.35rem' }}>
+                  {t('budget.dropzoneText')}
+                </div>
+                <div style={{ fontSize:'.83rem', color:'var(--muted)' }}>{t('budget.supportedBanks')}</div>
+              </div>
+              {importError && (
+                <div style={{ marginTop:'1rem', padding:'.75rem 1rem', background:'#fdedec', borderRadius:8, color:'var(--danger)', fontSize:'.88rem' }}>
+                  ⚠ {importError}
+                </div>
+              )}
+              <div style={{ marginTop:'1.25rem', padding:'1rem', background:'var(--light)', borderRadius:10, fontSize:'.82rem', color:'var(--muted)' }}>
+                <strong style={{ color:'var(--navy)' }}>How to export:</strong>{' '}
+                {t('budget.importHowTo')}
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Preview */}
+          {importPreview && (
+            <div>
+              {/* Stats bar */}
+              <div className="csv-stats-bar">
+                <div className="csb-item">
+                  <div className="csb-label">{t('budget.detected')}</div>
+                  <div className="csb-val">{BANK_NAMES[importPreview.bank] ?? t('budget.unknownBank')}</div>
+                </div>
+                <div className="csb-item">
+                  <div className="csb-label">{t('budget.totalTransactions')}</div>
+                  <div className="csb-val">{importPreview.rows.length}</div>
+                </div>
+                <div className="csb-item">
+                  <div className="csb-label">{t('budget.newTransactions')}</div>
+                  <div className="csb-val" style={{ color:'var(--success)' }}>
+                    {importPreview.rows.filter(r => !r.isDuplicate).length}
+                  </div>
+                </div>
+                <div className="csb-item">
+                  <div className="csb-label">{t('budget.duplicatesSkipped')}</div>
+                  <div className="csb-val" style={{ color:'var(--muted)' }}>
+                    {importPreview.rows.filter(r => r.isDuplicate).length}
+                  </div>
+                </div>
+              </div>
+
+              {/* Category totals preview */}
+              {(() => {
+                const totals = {};
+                for (const r of importPreview.rows) {
+                  if (!r.isDuplicate && r.include)
+                    totals[r.categoryId] = (totals[r.categoryId] ?? 0) + r.amount;
+                }
+                const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+                return entries.length > 0 ? (
+                  <div className="card" style={{ marginBottom:'1rem' }}>
+                    <div style={{ fontWeight:700, fontSize:'.92rem', color:'var(--navy)', marginBottom:'.75rem' }}>
+                      📊 {t('budget.importByCategory')}
+                    </div>
+                    <div className="csv-cat-totals">
+                      {entries.map(([catId, total]) => {
+                        const cat = allCats.find(c => c.id === catId);
+                        return (
+                          <div key={catId} className="cct-row">
+                            <span style={{ fontSize:'1.1rem' }}>{cat?.icon ?? '📦'}</span>
+                            <span style={{ flex:1, fontSize:'.88rem', fontWeight:500 }}>{cat?.name ?? catId}</span>
+                            <span style={{ fontWeight:700, color:'var(--navy)' }}>{fmtUSD(total)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              {/* Transaction preview table */}
+              <div className="card">
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'.85rem', flexWrap:'wrap', gap:'.5rem' }}>
+                  <div style={{ fontWeight:700, fontSize:'.95rem', color:'var(--navy)' }}>
+                    {t('budget.importPreview')} ({importPreview.rows.length})
+                  </div>
+                  <div style={{ display:'flex', gap:'.4rem', flexWrap:'wrap' }}>
+                    <button className="btn" style={{ fontSize:'.78rem', padding:'.32rem .7rem' }}
+                      onClick={() => setImportPreview(prev => ({ ...prev, rows: prev.rows.map(r => r.isDuplicate ? r : { ...r, include: true }) }))}>
+                      {t('budget.selectAll')}
+                    </button>
+                    <button className="btn" style={{ fontSize:'.78rem', padding:'.32rem .7rem' }}
+                      onClick={() => setImportPreview(prev => ({ ...prev, rows: prev.rows.map(r => ({ ...r, include: false })) }))}>
+                      {t('budget.deselectAll')}
+                    </button>
+                    <button className="btn" style={{ fontSize:'.78rem', padding:'.32rem .7rem', color:'var(--muted)' }}
+                      onClick={resetImport}>
+                      ✕ {t('budget.cancel')}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="csv-preview-wrap">
+                  <table className="csv-preview-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width:32 }}></th>
+                        <th>{t('budget.date')}</th>
+                        <th>{t('budget.description')}</th>
+                        <th style={{ textAlign:'right' }}>{t('budget.amount')}</th>
+                        <th>{t('budget.category')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importPreview.rows.slice(0, 300).map((row, idx) => (
+                        <tr key={idx} className={row.isDuplicate ? 'csv-dup-row' : ''}>
+                          <td style={{ textAlign:'center' }}>
+                            {row.isDuplicate
+                              ? <span className="csv-dup-badge" title={t('budget.duplicate')}>⊘</span>
+                              : <input type="checkbox" checked={row.include}
+                                  onChange={e => updateImportRow(idx, 'include', e.target.checked)} />}
+                          </td>
+                          <td className="csv-cell-date">{row.date}</td>
+                          <td className="csv-cell-desc">{row.description}</td>
+                          <td className="csv-cell-amt">{fmtUSD(row.amount)}</td>
+                          <td>
+                            {row.isDuplicate
+                              ? <span style={{ fontSize:'.76rem', color:'var(--muted)' }}>{t('budget.duplicate')}</span>
+                              : <select value={row.categoryId}
+                                  onChange={e => updateImportRow(idx, 'categoryId', e.target.value)}
+                                  className="csv-cat-select">
+                                  {allCats.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+                                </select>
+                            }
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {importPreview.rows.length > 300 && (
+                    <div style={{ textAlign:'center', padding:'.6rem', fontSize:'.82rem', color:'var(--muted)', background:'var(--light)' }}>
+                      +{importPreview.rows.length - 300} {t('budget.moreRows')}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ marginTop:'1rem', display:'flex', justifyContent:'flex-end' }}>
+                  <button className="btn btn-primary" style={{ padding:'.65rem 1.5rem', fontSize:'.95rem' }}
+                    onClick={confirmImport}>
+                    ✅ {t('budget.importBtn').replace('{n}', importPreview.rows.filter(r => r.include && !r.isDuplicate).length)}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Success */}
+          {importDone && (
+            <div className="card" style={{ textAlign:'center', padding:'3rem 2rem' }}>
+              <div style={{ fontSize:'3.5rem', marginBottom:'1rem' }}>✅</div>
+              <div style={{ fontSize:'1.3rem', fontWeight:800, color:'var(--navy)', marginBottom:'.5rem' }}>
+                {t('budget.importSuccess').replace('{n}', importDone.count)}
+              </div>
+              <div style={{ color:'var(--muted)', fontSize:'.9rem', marginBottom:'2rem' }}>
+                {t('budget.importSuccessDesc')}
+              </div>
+              <div style={{ display:'flex', gap:'.75rem', justifyContent:'center', flexWrap:'wrap' }}>
+                <button className="btn btn-primary" onClick={resetImport}>{t('budget.importAnother')}</button>
+                <button className="btn" onClick={() => setActiveTab('expenses')}>{t('budget.viewHistory')}</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ══════════════════════ CALENDAR ════════════════════════ */}
       {activeTab === 'calendar' && (
         <div className="card">
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'1.25rem' }}>
             <button className="btn" style={{ padding:'.4rem 1rem', fontSize:'1.1rem' }} onClick={prevMonth}>‹</button>
-            <div style={{ fontWeight:800, fontSize:'1.1rem', color:'var(--navy)' }}>
-              {MONTH_NAMES[calMonth]} {calYear}
-            </div>
+            <div style={{ fontWeight:800, fontSize:'1.1rem', color:'var(--navy)' }}>{MONTH_NAMES[calMonth]} {calYear}</div>
             <button className="btn" style={{ padding:'.4rem 1rem', fontSize:'1.1rem' }} onClick={nextMonth}>›</button>
           </div>
-
-          <CalendarGrid
-            month={calMonth} year={calYear}
-            expensesByDay={expensesByDay}
-            selectedDay={selectedDay}
-            onSelectDay={setSelectedDay}
-            allCats={allCats}
-          />
-
+          <CalendarGrid month={calMonth} year={calYear} expensesByDay={expensesByDay}
+            selectedDay={selectedDay} onSelectDay={setSelectedDay} allCats={allCats} />
           {selectedDay && expensesByDay[selectedDay] && (
             <div style={{ marginTop:'1.25rem', paddingTop:'1rem', borderTop:'1px solid var(--border)' }}>
-              <div style={{ fontWeight:700, color:'var(--navy)', marginBottom:'.75rem' }}>
-                {MONTH_NAMES[calMonth]} {selectedDay}
-              </div>
+              <div style={{ fontWeight:700, color:'var(--navy)', marginBottom:'.75rem' }}>{MONTH_NAMES[calMonth]} {selectedDay}</div>
               {expensesByDay[selectedDay].map(exp => {
                 const cat = allCats.find(c => c.id === exp.categoryId);
                 return (
@@ -573,7 +780,6 @@ export default function Budget() {
               </div>
             </div>
           )}
-
           {calExpenses.length > 0 && (
             <div style={{ marginTop:'1.25rem', paddingTop:'1rem', borderTop:'1px solid var(--border)', display:'flex', justifyContent:'space-between', fontWeight:700, color:'var(--navy)' }}>
               <span>{t('budget.totalSpent')} — {MONTH_NAMES[calMonth]}</span>
@@ -583,18 +789,14 @@ export default function Budget() {
         </div>
       )}
 
-      {/* ── NET WORTH ─────────────────────────────────────────────── */}
+      {/* ══════════════════════ NET WORTH ═══════════════════════ */}
       {activeTab === 'networth' && (
         <>
-          <div
-            className="budget-nw-hero"
-            style={{ background: netWorth >= 0 ? 'linear-gradient(135deg,#166534,#16a34a)' : 'linear-gradient(135deg,#991b1b,#dc2626)' }}
-          >
+          <div className="budget-nw-hero"
+            style={{ background: netWorth >= 0 ? 'linear-gradient(135deg,#166534,#16a34a)' : 'linear-gradient(135deg,#991b1b,#dc2626)' }}>
             <div className="nwh-label">{t('budget.netWorthTotal')}</div>
             <div className="nwh-value">{fmtUSD(netWorth)}</div>
-            <div className="nwh-sub">
-              {t('budget.assets')}: {fmtUSD(totalAssets)} &nbsp;·&nbsp; {t('budget.liabilities')}: {fmtUSD(totalLiabilities)}
-            </div>
+            <div className="nwh-sub">{t('budget.assets')}: {fmtUSD(totalAssets)} &nbsp;·&nbsp; {t('budget.liabilities')}: {fmtUSD(totalLiabilities)}</div>
           </div>
 
           <div className="two-col" style={{ alignItems:'start', marginTop:'1.5rem' }}>
@@ -605,19 +807,14 @@ export default function Budget() {
                 <div key={a.id} className="budget-nw-row">
                   <span className="bnwr-name">{a.name}</span>
                   <span className="bnwr-val" style={{ color:'var(--success)' }}>{fmtUSD(a.value)}</span>
-                  <button className="ber-del" style={{ opacity:1 }}
-                    onClick={() => setAssets(prev => prev.filter(x => x.id !== a.id))}>✕</button>
+                  <button className="ber-del" style={{ opacity:1 }} onClick={() => setAssets(prev => prev.filter(x => x.id !== a.id))}>✕</button>
                 </div>
               ))}
               <div style={{ display:'flex', gap:'.5rem', marginTop:'.85rem', flexWrap:'wrap' }}>
-                <input type="text" placeholder={t('budget.assetName')}
-                  value={assetForm.name}
-                  onChange={e => setAssetForm(f => ({ ...f, name: e.target.value }))}
-                  style={{ flex:2, minWidth:120 }} />
-                <input type="number" min={0} placeholder="$0"
-                  value={assetForm.value}
-                  onChange={e => setAssetForm(f => ({ ...f, value: e.target.value }))}
-                  style={{ flex:1, minWidth:80 }} />
+                <input type="text" placeholder={t('budget.assetName')} value={assetForm.name}
+                  onChange={e => setAssetForm(f => ({ ...f, name: e.target.value }))} style={{ flex:2, minWidth:120 }} />
+                <input type="number" min={0} placeholder="$0" value={assetForm.value}
+                  onChange={e => setAssetForm(f => ({ ...f, value: e.target.value }))} style={{ flex:1, minWidth:80 }} />
                 <button className="btn btn-primary" onClick={() => {
                   if (!assetForm.name.trim() || !assetForm.value) return;
                   setAssets(prev => [...prev, { id: uid(), name: assetForm.name.trim(), value: parseFloat(assetForm.value) || 0 }]);
@@ -636,19 +833,14 @@ export default function Budget() {
                 <div key={l.id} className="budget-nw-row">
                   <span className="bnwr-name">{l.name}</span>
                   <span className="bnwr-val" style={{ color:'var(--danger)' }}>{fmtUSD(l.value)}</span>
-                  <button className="ber-del" style={{ opacity:1 }}
-                    onClick={() => setLiabilities(prev => prev.filter(x => x.id !== l.id))}>✕</button>
+                  <button className="ber-del" style={{ opacity:1 }} onClick={() => setLiabilities(prev => prev.filter(x => x.id !== l.id))}>✕</button>
                 </div>
               ))}
               <div style={{ display:'flex', gap:'.5rem', marginTop:'.85rem', flexWrap:'wrap' }}>
-                <input type="text" placeholder={t('budget.liabilityName')}
-                  value={liabForm.name}
-                  onChange={e => setLiabForm(f => ({ ...f, name: e.target.value }))}
-                  style={{ flex:2, minWidth:120 }} />
-                <input type="number" min={0} placeholder="$0"
-                  value={liabForm.value}
-                  onChange={e => setLiabForm(f => ({ ...f, value: e.target.value }))}
-                  style={{ flex:1, minWidth:80 }} />
+                <input type="text" placeholder={t('budget.liabilityName')} value={liabForm.name}
+                  onChange={e => setLiabForm(f => ({ ...f, name: e.target.value }))} style={{ flex:2, minWidth:120 }} />
+                <input type="number" min={0} placeholder="$0" value={liabForm.value}
+                  onChange={e => setLiabForm(f => ({ ...f, value: e.target.value }))} style={{ flex:1, minWidth:80 }} />
                 <button className="btn btn-primary" onClick={() => {
                   if (!liabForm.name.trim() || !liabForm.value) return;
                   setLiabilities(prev => [...prev, { id: uid(), name: liabForm.name.trim(), value: parseFloat(liabForm.value) || 0 }]);
