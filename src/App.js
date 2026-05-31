@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import './styles.css';
 import { LanguageProvider, LanguageContext, useT } from './LanguageContext';
+import Landing      from './components/Landing';
 import CarLoan      from './components/CarLoan';
 import HomeLoan     from './components/HomeLoan';
 import Budget       from './components/Budget';
@@ -19,7 +20,7 @@ const NAV_GROUPS = [
 ];
 
 function AppInner() {
-  const [tab,      setTab]      = useState('car');
+  const [tab,      setTab]      = useState('landing');
   const [menuOpen, setMenuOpen] = useState(false);
   const { toggle } = useContext(LanguageContext);
   const t = useT();
@@ -43,18 +44,28 @@ function AppInner() {
   function navigate(id) {
     setTab(id);
     setMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   return (
     <div className="app">
       <header className="header">
         <div className="header-inner">
-          <div className="logo">
+          {/* Logo — always navigates home */}
+          <div
+            className="logo"
+            onClick={() => navigate('landing')}
+            style={{ cursor: 'pointer' }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={e => e.key === 'Enter' && navigate('landing')}
+            aria-label="Go to home page"
+          >
             <span className="logo-icon">💰</span>
             {t('nav.brand')}
           </div>
 
-          {/* Desktop nav — hidden on mobile via CSS */}
+          {/* Desktop nav */}
           <nav className="nav">
             {NAV_GROUPS.map(group => {
               const isGroupActive = group.ids.includes(tab);
@@ -63,7 +74,7 @@ function AppInner() {
                   <button
                     key={group.id}
                     className={`nav-btn${isGroupActive ? ' active' : ''}`}
-                    onClick={() => setTab(group.ids[0])}
+                    onClick={() => navigate(group.ids[0])}
                   >
                     {t(group.labelKey)}
                   </button>
@@ -79,7 +90,7 @@ function AppInner() {
                       <button
                         key={id}
                         className={`nav-dropdown-item${tab === id ? ' active' : ''}`}
-                        onClick={() => setTab(id)}
+                        onClick={() => navigate(id)}
                       >
                         {t(`nav.${id}`)}
                       </button>
@@ -100,7 +111,7 @@ function AppInner() {
             </button>
           </nav>
 
-          {/* Hamburger — shown only on mobile */}
+          {/* Hamburger */}
           <button
             className={`hamburger-btn${menuOpen ? ' is-open' : ''}`}
             onClick={() => setMenuOpen(m => !m)}
@@ -112,8 +123,14 @@ function AppInner() {
           </button>
         </div>
 
-        {/* Mobile dropdown menu */}
+        {/* Mobile menu */}
         <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
+          <button
+            className={`mobile-nav-btn${tab === 'landing' ? ' active' : ''}`}
+            onClick={() => navigate('landing')}
+          >
+            🏠 {t('landing.navHome')}
+          </button>
           {ALL_TABS.map(tb => (
             <button
               key={tb.id}
@@ -132,18 +149,21 @@ function AppInner() {
         </div>
       </header>
 
-      <main className="main">
-        <h1 className="page-title">{t(`titles.${tab}`)}</h1>
-
-        {tab === 'car'         && <CarLoan />}
-        {tab === 'home'        && <><HomeLoan /><CardPromo onNavigate={() => navigate('amex')} /></>}
-        {tab === 'budget'      && <Budget />}
-        {tab === 'tax'         && <NetIncome />}
-        {tab === 'cc'          && <CreditCard />}
-        {tab === 'amex'        && <AmexReferral />}
-        {tab === 'retirement'  && <Retirement />}
-        {tab === 'personalLoan'&& <PersonalLoan />}
-      </main>
+      {tab === 'landing' ? (
+        <Landing onNavigate={navigate} />
+      ) : (
+        <main className="main">
+          <h1 className="page-title">{t(`titles.${tab}`)}</h1>
+          {tab === 'car'         && <CarLoan />}
+          {tab === 'home'        && <><HomeLoan /><CardPromo onNavigate={() => navigate('amex')} /></>}
+          {tab === 'budget'      && <Budget />}
+          {tab === 'tax'         && <NetIncome />}
+          {tab === 'cc'          && <CreditCard />}
+          {tab === 'amex'        && <AmexReferral />}
+          {tab === 'retirement'  && <Retirement />}
+          {tab === 'personalLoan'&& <PersonalLoan />}
+        </main>
+      )}
 
       <footer className="footer">
         {t('footer')}
