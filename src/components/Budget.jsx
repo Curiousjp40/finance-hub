@@ -5,6 +5,11 @@ import { useT, useLang } from '../LanguageContext';
 import { useLocalState } from '../utils/useLocalState';
 import { parseCSV, makeHash, BANK_NAMES } from '../utils/csvParser';
 import { parsePDF } from '../utils/pdfParser';
+import BillTracker         from './BillTracker';
+import DebtTracker         from './DebtTracker';
+import EmergencyFund       from './EmergencyFund';
+import SavingsGoals        from './SavingsGoals';
+import SubscriptionTracker from './SubscriptionTracker';
 
 const CAT_META = [
   { id: 'housing',       icon: '🏠', color: '#1a5276', type: 'need', defaultLimit: 1500 },
@@ -20,11 +25,16 @@ const CAT_META = [
 ];
 
 const TABS = [
-  { id: 'overview', icon: '📊' },
-  { id: 'expenses', icon: '📝' },
-  { id: 'import',   icon: '📥' },
-  { id: 'calendar', icon: '📅' },
-  { id: 'networth', icon: '💼' },
+  { id: 'overview',       icon: '📊' },
+  { id: 'expenses',       icon: '📝' },
+  { id: 'import',         icon: '📥' },
+  { id: 'calendar',       icon: '📅' },
+  { id: 'networth',       icon: '💼' },
+  { id: 'bills',          icon: '📅' },
+  { id: 'debt',           icon: '💳' },
+  { id: 'emergency',      icon: '🆘' },
+  { id: 'savings',        icon: '🎯' },
+  { id: 'subscriptions',  icon: '📱' },
 ];
 
 const MONTH_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -990,6 +1000,21 @@ export default function Budget() {
           </div>
         </>
       )}
+
+      {/* ══════════════════════ BILLS ═══════════════════════════ */}
+      {activeTab === 'bills' && <BillTracker />}
+
+      {/* ══════════════════════ DEBT ════════════════════════════ */}
+      {activeTab === 'debt' && <DebtTracker />}
+
+      {/* ══════════════════════ EMERGENCY FUND ═════════════════ */}
+      {activeTab === 'emergency' && <EmergencyFund />}
+
+      {/* ══════════════════════ SAVINGS GOALS ══════════════════ */}
+      {activeTab === 'savings' && <SavingsGoals />}
+
+      {/* ══════════════════════ SUBSCRIPTIONS ══════════════════ */}
+      {activeTab === 'subscriptions' && <SubscriptionTracker />}
     </div>
   );
 }
