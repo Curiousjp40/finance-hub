@@ -627,6 +627,549 @@ export const VEHICLES = [
     insuranceTier: 'high',
     maintenanceTier: 'mid',
   },
+  {
+    make: 'Dodge',
+    model: 'Durango',
+    trims: [
+      { name: 'SXT', msrp: 35000 },
+      { name: 'GT',  msrp: 41000 },
+      { name: 'R/T', msrp: 47000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Dodge',
+    model: 'Dakota',
+    trims: [
+      { name: 'SXT', msrp: 20000 },
+      { name: 'ST',  msrp: 22000 },
+      { name: 'R/T', msrp: 25000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Ford (older / additional) ────────────────────────────────────────────
+  {
+    make: 'Ford',
+    model: 'Explorer (Classic)',
+    trims: [
+      { name: 'XLS',         msrp: 24500 },
+      { name: 'XLT',         msrp: 28500 },
+      { name: 'Eddie Bauer', msrp: 34000 },
+      { name: 'Limited',     msrp: 38500 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Ford',
+    model: 'Explorer Sport Trac',
+    trims: [
+      { name: 'XLS',       msrp: 24000 },
+      { name: 'XLT',       msrp: 27500 },
+      { name: 'Adrenalin', msrp: 30000 },
+      { name: 'Limited',   msrp: 33000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Ford',
+    model: 'Ranger',
+    trims: [
+      { name: 'XL',    msrp: 14000 },
+      { name: 'XLT',   msrp: 17500 },
+      { name: 'Sport', msrp: 20000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'low',
+  },
+  {
+    make: 'Ford',
+    model: 'F-250 Super Duty',
+    trims: [
+      { name: 'XL',         msrp: 28000 },
+      { name: 'XLT',        msrp: 34000 },
+      { name: 'Lariat',     msrp: 44000 },
+      { name: 'King Ranch', msrp: 54000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'high',
+  },
+  {
+    make: 'Ford',
+    model: 'Crown Victoria',
+    trims: [
+      { name: 'Base', msrp: 25000 },
+      { name: 'LX',   msrp: 27500 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Ford',
+    model: 'Edge',
+    trims: [
+      { name: 'SE',      msrp: 27000 },
+      { name: 'SEL',     msrp: 32000 },
+      { name: 'Titanium', msrp: 38000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Ford',
+    model: 'Fusion',
+    trims: [
+      { name: 'S',       msrp: 22000 },
+      { name: 'SE',      msrp: 25000 },
+      { name: 'Titanium', msrp: 29000 },
+    ],
+    insuranceTier: 'low',
+    maintenanceTier: 'low',
+  },
+  {
+    make: 'Ford',
+    model: 'Maverick',
+    trims: [
+      { name: 'XL',     msrp: 21000 },
+      { name: 'XLT',    msrp: 25000 },
+      { name: 'Lariat', msrp: 31000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'low',
+  },
+
+  // ─── Chevrolet (older / additional) ──────────────────────────────────────
+  {
+    make: 'Chevrolet',
+    model: 'Trailblazer (Classic)',
+    trims: [
+      { name: 'LS',  msrp: 26000 },
+      { name: 'LT',  msrp: 29000 },
+      { name: 'LTZ', msrp: 34000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Chevrolet',
+    model: 'Impala',
+    trims: [
+      { name: 'LS',  msrp: 22000 },
+      { name: 'LT',  msrp: 25000 },
+      { name: 'LTZ', msrp: 28000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Chevrolet',
+    model: 'Malibu',
+    trims: [
+      { name: 'LS',  msrp: 21000 },
+      { name: 'LT',  msrp: 24000 },
+      { name: 'LTZ', msrp: 27000 },
+    ],
+    insuranceTier: 'low',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Chevrolet',
+    model: 'Traverse',
+    trims: [
+      { name: 'LS',  msrp: 28000 },
+      { name: 'LT',  msrp: 33000 },
+      { name: 'LTZ', msrp: 38000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Chevrolet',
+    model: 'Silverado 2500HD',
+    trims: [
+      { name: 'Work Truck', msrp: 36000 },
+      { name: 'LT',         msrp: 46000 },
+      { name: 'LTZ',        msrp: 56000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'high',
+  },
+  {
+    make: 'Chevrolet',
+    model: 'Avalanche',
+    trims: [
+      { name: 'LS', msrp: 38000 },
+      { name: 'LT', msrp: 43000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Jeep (additional) ────────────────────────────────────────────────────
+  {
+    make: 'Jeep',
+    model: 'Liberty',
+    trims: [
+      { name: 'Sport',    msrp: 19500 },
+      { name: 'Limited',  msrp: 23000 },
+      { name: 'Renegade', msrp: 27000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Jeep',
+    model: 'Compass',
+    trims: [
+      { name: 'Sport',    msrp: 20000 },
+      { name: 'Latitude', msrp: 24000 },
+      { name: 'Limited',  msrp: 28000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Jeep',
+    model: 'Cherokee',
+    trims: [
+      { name: 'Latitude',   msrp: 26000 },
+      { name: 'Trailhawk',  msrp: 32000 },
+      { name: 'Limited',    msrp: 36000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Nissan (additional) ──────────────────────────────────────────────────
+  {
+    make: 'Nissan',
+    model: 'Pathfinder',
+    trims: [
+      { name: 'S',  msrp: 33000 },
+      { name: 'SV', msrp: 36000 },
+      { name: 'SL', msrp: 43000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Nissan',
+    model: 'Xterra',
+    trims: [
+      { name: 'X',      msrp: 23000 },
+      { name: 'S',      msrp: 26000 },
+      { name: 'Pro-4X', msrp: 31000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Nissan',
+    model: 'Titan',
+    trims: [
+      { name: 'S',      msrp: 36000 },
+      { name: 'SV',     msrp: 41000 },
+      { name: 'Pro-4X', msrp: 47000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Honda (additional) ───────────────────────────────────────────────────
+  {
+    make: 'Honda',
+    model: 'Odyssey',
+    trims: [
+      { name: 'LX',      msrp: 32000 },
+      { name: 'EX',      msrp: 36000 },
+      { name: 'EX-L',    msrp: 42000 },
+      { name: 'Touring', msrp: 48000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'low',
+  },
+  {
+    make: 'Honda',
+    model: 'Element',
+    trims: [
+      { name: 'LX', msrp: 21000 },
+      { name: 'EX', msrp: 23500 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'low',
+  },
+  {
+    make: 'Honda',
+    model: 'Ridgeline',
+    trims: [
+      { name: 'Sport', msrp: 35000 },
+      { name: 'RTL',   msrp: 39000 },
+      { name: 'RTL-E', msrp: 45000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'low',
+  },
+
+  // ─── Toyota (additional) ──────────────────────────────────────────────────
+  {
+    make: 'Toyota',
+    model: '4Runner',
+    trims: [
+      { name: 'SR5',           msrp: 35000 },
+      { name: 'TRD Off-Road',  msrp: 39000 },
+      { name: 'Limited',       msrp: 47000 },
+      { name: 'TRD Pro',       msrp: 52000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'low',
+  },
+  {
+    make: 'Toyota',
+    model: 'Sequoia',
+    trims: [
+      { name: 'SR5',      msrp: 49000 },
+      { name: 'Limited',  msrp: 59000 },
+      { name: 'Platinum', msrp: 70000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'low',
+  },
+  {
+    make: 'Toyota',
+    model: 'Sienna',
+    trims: [
+      { name: 'LE',      msrp: 35000 },
+      { name: 'XLE',     msrp: 42000 },
+      { name: 'Limited', msrp: 52000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'low',
+  },
+  {
+    make: 'Toyota',
+    model: 'FJ Cruiser',
+    trims: [
+      { name: 'Base',        msrp: 26000 },
+      { name: 'Trail Teams', msrp: 30000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── GMC (additional) ─────────────────────────────────────────────────────
+  {
+    make: 'GMC',
+    model: 'Yukon',
+    trims: [
+      { name: 'SLE',    msrp: 52000 },
+      { name: 'SLT',    msrp: 59000 },
+      { name: 'Denali', msrp: 72000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'GMC',
+    model: 'Canyon',
+    trims: [
+      { name: 'Elevation', msrp: 29000 },
+      { name: 'AT4',       msrp: 36000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Cadillac ─────────────────────────────────────────────────────────────
+  {
+    make: 'Cadillac',
+    model: 'Escalade',
+    trims: [
+      { name: 'Standard',  msrp: 78000 },
+      { name: 'ESV',       msrp: 82000 },
+      { name: 'Sport',     msrp: 95000 },
+    ],
+    insuranceTier: 'luxury',
+    maintenanceTier: 'luxury',
+  },
+
+  // ─── Lincoln ──────────────────────────────────────────────────────────────
+  {
+    make: 'Lincoln',
+    model: 'Navigator',
+    trims: [
+      { name: 'Standard',    msrp: 77000 },
+      { name: 'Reserve',     msrp: 83000 },
+      { name: 'Black Label', msrp: 100000 },
+    ],
+    insuranceTier: 'luxury',
+    maintenanceTier: 'luxury',
+  },
+
+  // ─── Chrysler ─────────────────────────────────────────────────────────────
+  {
+    make: 'Chrysler',
+    model: '300',
+    trims: [
+      { name: 'Touring', msrp: 28000 },
+      { name: 'S',       msrp: 33000 },
+      { name: 'Limited', msrp: 39000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Buick ────────────────────────────────────────────────────────────────
+  {
+    make: 'Buick',
+    model: 'Enclave',
+    trims: [
+      { name: 'Preferred', msrp: 43000 },
+      { name: 'Essence',   msrp: 48000 },
+      { name: 'Avenir',    msrp: 56000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Mitsubishi ───────────────────────────────────────────────────────────
+  {
+    make: 'Mitsubishi',
+    model: 'Outlander',
+    trims: [
+      { name: 'ES',  msrp: 26000 },
+      { name: 'SE',  msrp: 29000 },
+      { name: 'SEL', msrp: 34000 },
+    ],
+    insuranceTier: 'low',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Subaru (additional) ──────────────────────────────────────────────────
+  {
+    make: 'Subaru',
+    model: 'Crosstrek',
+    trims: [
+      { name: 'Base',    msrp: 22000 },
+      { name: 'Premium', msrp: 25000 },
+      { name: 'Limited', msrp: 29000 },
+    ],
+    insuranceTier: 'low',
+    maintenanceTier: 'low',
+  },
+  {
+    make: 'Subaru',
+    model: 'Legacy',
+    trims: [
+      { name: 'Base',    msrp: 23000 },
+      { name: 'Premium', msrp: 25000 },
+      { name: 'Limited', msrp: 30000 },
+    ],
+    insuranceTier: 'low',
+    maintenanceTier: 'low',
+  },
+
+  // ─── Kia (additional) ─────────────────────────────────────────────────────
+  {
+    make: 'Kia',
+    model: 'Sorento',
+    trims: [
+      { name: 'LX', msrp: 29000 },
+      { name: 'S',  msrp: 32000 },
+      { name: 'EX', msrp: 36000 },
+      { name: 'SX', msrp: 42000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Kia',
+    model: 'Soul',
+    trims: [
+      { name: 'LX', msrp: 18000 },
+      { name: 'S',  msrp: 20000 },
+      { name: 'EX', msrp: 23000 },
+    ],
+    insuranceTier: 'low',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Hyundai (additional) ─────────────────────────────────────────────────
+  {
+    make: 'Hyundai',
+    model: 'Kona',
+    trims: [
+      { name: 'SE',     msrp: 21000 },
+      { name: 'SEL',    msrp: 24000 },
+      { name: 'N Line', msrp: 29000 },
+    ],
+    insuranceTier: 'low',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Hyundai',
+    model: 'Ioniq 5',
+    trims: [
+      { name: 'Standard Range', msrp: 41000 },
+      { name: 'Long Range',     msrp: 46000 },
+      { name: 'AWD',            msrp: 49000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'low',
+  },
+
+  // ─── Volkswagen (additional) ──────────────────────────────────────────────
+  {
+    make: 'Volkswagen',
+    model: 'Passat',
+    trims: [
+      { name: 'S',   msrp: 23000 },
+      { name: 'SE',  msrp: 27000 },
+      { name: 'SEL', msrp: 32000 },
+    ],
+    insuranceTier: 'low',
+    maintenanceTier: 'mid',
+  },
+  {
+    make: 'Volkswagen',
+    model: 'Atlas',
+    trims: [
+      { name: 'S',   msrp: 34000 },
+      { name: 'SE',  msrp: 39000 },
+      { name: 'SEL', msrp: 47000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'mid',
+  },
+
+  // ─── Mazda (additional) ───────────────────────────────────────────────────
+  {
+    make: 'Mazda',
+    model: 'CX-9',
+    trims: [
+      { name: 'Sport',     msrp: 35000 },
+      { name: 'Touring',   msrp: 40000 },
+      { name: 'Signature', msrp: 48000 },
+    ],
+    insuranceTier: 'mid',
+    maintenanceTier: 'low',
+  },
+
+  // ─── Rivian ───────────────────────────────────────────────────────────────
+  {
+    make: 'Rivian',
+    model: 'R1T',
+    trims: [
+      { name: 'Standard', msrp: 67000 },
+      { name: 'Large',    msrp: 73000 },
+      { name: 'Max',      msrp: 84000 },
+    ],
+    insuranceTier: 'high',
+    maintenanceTier: 'low',
+  },
 ];
 
 // ─── Depreciation ─────────────────────────────────────────────────────────────

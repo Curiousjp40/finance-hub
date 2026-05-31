@@ -316,6 +316,16 @@ const translations = {
       ],
     },
 
+    promo: {
+      headline:     'Thinking About Opening a Credit Card?',
+      subhead:      'See What We Use and Recommend',
+      description:  'These are cards we personally use and trust. Apply through our referral links and you\'ll get a welcome bonus — plus help support this site at no cost to you.',
+      welcomeBonus: 'Welcome Bonus',
+      bestFor:      'Best for:',
+      applyNow:     'Apply Now →',
+      seeAll:       'See All Cards & Referral Links →',
+    },
+
     personalLoan: {
       sub:             'Understand the true cost of personal loans and protect yourself from predatory lenders.',
       noteTitle:       '⚠ Our Personal Experience',
@@ -761,6 +771,16 @@ const translations = {
       stopAge:          'Edad de Parar Aportaciones',
       stopAgeHint:      'deja de aportar a esta edad',
       newAccountName:   'Nombre de cuenta (p.ej. TSP, Roth IRA)',
+    },
+
+    promo: {
+      headline:     '¿Estás pensando en abrir una tarjeta de crédito?',
+      subhead:      'Conoce las que usamos y recomendamos',
+      description:  'Estas son tarjetas que usamos y en las que confiamos personalmente. Aplica a través de nuestros enlaces de referencia y obtendrás un bono de bienvenida, además de apoyar este sitio sin costo para ti.',
+      welcomeBonus: 'Bono de Bienvenida',
+      bestFor:      'Ideal para:',
+      applyNow:     'Aplicar Ahora →',
+      seeAll:       'Ver Todas las Tarjetas y Referidos →',
     },
 
     personalLoan: {

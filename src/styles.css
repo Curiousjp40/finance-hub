@@ -64,6 +64,18 @@ body {
 
 /* Dropdown nav groups */
 .nav-group { position: relative; }
+
+/* Invisible bridge fills the gap between trigger and dropdown */
+.nav-group::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: -8px;
+  right: -8px;
+  height: 10px;
+  z-index: 299;
+}
+
 .nav-group:hover .nav-dropdown,
 .nav-group:focus-within .nav-dropdown {
   opacity: 1;

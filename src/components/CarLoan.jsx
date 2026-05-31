@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { monthlyPayment, amortizeSchedule, fmtUSD, fmtUSD2 } from '../utils/finance';
 import { useT } from '../LanguageContext';
 import { useLocalState } from '../utils/useLocalState';
@@ -481,53 +481,22 @@ export default function CarLoan() {
                 {/* ── TCO Summary ── */}
                 {vr.vehMeta && vr.trim && (
                   <div style={{ marginTop:'1.25rem', background:'var(--light)', border:'1.5px solid var(--border)', borderRadius:10, padding:'1rem 1.25rem' }}>
-                    <div style={{ fontWeight:700, color:'var(--navy)', fontSize:'.95rem', marginBottom:'.85rem' }}>
+                    <div style={{ fontWeight:700, color:'var(--navy)', fontSize:'.95rem', marginBottom:'1rem' }}>
                       💰 {t('car.tcoTitle')}
                       <span style={{ fontWeight:400, color:'var(--muted)', fontSize:'.82rem', marginLeft:'.5rem' }}>
                         {t('car.tcoOver').replace('{n}', vr.term)}
                       </span>
                     </div>
-                    <div style={{ display:'flex', gap:'1.25rem', flexWrap:'wrap', alignItems:'flex-start' }}>
-                      {/* Row breakdown */}
-                      <div style={{ flex:'1', minWidth:200, display:'grid', gap:'.6rem' }}>
-                        <TCORow label={t('car.tcoLoanCost')}    value={fmtUSD(vr.tcoLoan)} />
-                        <TCORow
-                          label={vr.isActualIns ? t('car.tcoInsuranceActual') : t('car.tcoInsurance')}
-                          value={fmtUSD(vr.tcoInsurance)}
-                          highlight={vr.isActualIns}
-                        />
-                        <TCORow label={t('car.tcoMaintenance')} value={fmtUSD(vr.tcoMaintenance)} />
-                        <TCORow label={t('car.tcoDeprec')}      value={fmtUSD(vr.tcoDeprec)} color="var(--danger)" />
-                        <TCORow label={t('car.tcoGrandTotal')}  value={fmtUSD(vr.tcoTotal)} bold color="var(--navy)" />
-                      </div>
-                      {/* Pie chart */}
-                      {vr.tcoTotal > 0 && (
-                        <div style={{ flex:'0 0 220px', height:180 }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={[
-                                  { name: t('car.tcoLoanCost'),    value: Math.round(vr.tcoLoan) },
-                                  { name: vr.isActualIns ? t('car.tcoInsuranceActual') : t('car.tcoInsurance'), value: Math.round(vr.tcoInsurance) },
-                                  { name: t('car.tcoMaintenance'), value: Math.round(vr.tcoMaintenance) },
-                                  { name: t('car.tcoDeprec'),      value: Math.round(vr.tcoDeprec) },
-                                ].filter(d => d.value > 0)}
-                                cx="50%" cy="50%"
-                                innerRadius={45} outerRadius={72}
-                                dataKey="value"
-                                paddingAngle={2}
-                              >
-                                {['#1a5276','#2e86c1','#27ae60','#c0392b'].map((color, i) => (
-                                  <Cell key={i} fill={color} />
-                                ))}
-                              </Pie>
-                              <Tooltip formatter={v => fmtUSD(v)} />
-                              <Legend iconSize={10} wrapperStyle={{ fontSize:'.72rem' }} />
-                            </PieChart>
-                          </ResponsiveContainer>
-                        </div>
-                      )}
-                    </div>
+                    <TCOBarChart
+                      items={[
+                        { label: t('car.tcoLoanCost'),    value: vr.tcoLoan,        color:'#1a5276' },
+                        { label: vr.isActualIns ? t('car.tcoInsuranceActual') : t('car.tcoInsurance'), value: vr.tcoInsurance, color:'#2e86c1', highlight: vr.isActualIns },
+                        { label: t('car.tcoMaintenance'), value: vr.tcoMaintenance, color:'#27ae60' },
+                        { label: t('car.tcoDeprec'),      value: vr.tcoDeprec,      color:'#c0392b' },
+                      ].filter(d => d.value > 0)}
+                      total={vr.tcoTotal}
+                      totalLabel={t('car.tcoGrandTotal')}
+                    />
                   </div>
                 )}
               </div>
@@ -593,16 +562,34 @@ function ValueStat({ label, value, sub, color }) {
   );
 }
 
-function TCORow({ label, value, color, bold, highlight }) {
+function TCOBarChart({ items, total, totalLabel }) {
+  const maxVal = Math.max(...items.map(d => d.value), 1);
   return (
-    <div style={{
-      display:'flex', justifyContent:'space-between', alignItems:'center',
-      background: highlight ? '#eafaf1' : '#fff',
-      border: `1px solid ${highlight ? 'var(--success)' : 'var(--border)'}`,
-      borderRadius:8, padding:'.55rem .8rem',
-    }}>
-      <span style={{ fontSize:'.82rem', color: highlight ? 'var(--success)' : 'var(--muted)', fontWeight: bold ? 700 : 500 }}>{label}</span>
-      <span style={{ fontWeight: bold ? 800 : 600, fontSize: bold ? '1rem' : '.9rem', color: color || 'var(--text)' }}>{value}</span>
+    <div>
+      {items.map((item, i) => {
+        const pct = (item.value / total * 100).toFixed(0);
+        return (
+          <div key={i} style={{ marginBottom:'.75rem' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:'.3rem' }}>
+              <span style={{ fontSize:'.82rem', fontWeight:600, color: item.highlight ? 'var(--success)' : 'var(--muted)', display:'flex', alignItems:'center', gap:'.4rem' }}>
+                <span style={{ width:10, height:10, borderRadius:'50%', background:item.color, display:'inline-block', flexShrink:0 }} />
+                {item.label}
+                {item.highlight && <span style={{ fontSize:'.72rem', color:'var(--success)' }}>✓</span>}
+              </span>
+              <span style={{ fontWeight:700, color:item.color, fontSize:'.88rem' }}>
+                {fmtUSD(item.value)} <span style={{ fontWeight:400, color:'var(--muted)', fontSize:'.75rem' }}>({pct}%)</span>
+              </span>
+            </div>
+            <div style={{ background:'#dde3ec', borderRadius:6, height:22, overflow:'hidden' }}>
+              <div style={{ width:`${(item.value / maxVal * 100).toFixed(1)}%`, height:'100%', background:item.color, borderRadius:6, transition:'width .4s ease' }} />
+            </div>
+          </div>
+        );
+      })}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'.85rem', borderTop:'2px solid var(--border)', paddingTop:'.75rem' }}>
+        <span style={{ fontWeight:700, color:'var(--navy)', fontSize:'.88rem' }}>{totalLabel}</span>
+        <span style={{ fontWeight:800, color:'var(--navy)', fontSize:'1.05rem' }}>{fmtUSD(total)}</span>
+      </div>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import CreditCard   from './components/CreditCard';
 import AmexReferral from './components/AmexReferral';
 import Retirement   from './components/Retirement';
 import PersonalLoan from './components/PersonalLoan';
+import CardPromo    from './components/CardPromo';
 
 const NAV_GROUPS = [
   { id: 'loans',      labelKey: 'nav.groupLoans',    ids: ['car', 'home', 'personalLoan'] },
@@ -135,7 +136,7 @@ function AppInner() {
         <h1 className="page-title">{t(`titles.${tab}`)}</h1>
 
         {tab === 'car'         && <CarLoan />}
-        {tab === 'home'        && <HomeLoan />}
+        {tab === 'home'        && <><HomeLoan /><CardPromo onNavigate={() => navigate('amex')} /></>}
         {tab === 'budget'      && <Budget />}
         {tab === 'tax'         && <NetIncome />}
         {tab === 'cc'          && <CreditCard />}
