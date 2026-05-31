@@ -139,23 +139,6 @@ export default function PersonalLoan() {
     <div>
       <p className="page-sub">{t('personalLoan.sub')}</p>
 
-      {/* ── Section 1: Personal Note ── */}
-      <div style={{
-        background: '#fffbeb',
-        borderLeft: '4px solid #d97706',
-        borderRadius: 10,
-        padding: '1.25rem 1.5rem',
-        marginBottom: '1.5rem',
-        boxShadow: '0 2px 8px rgba(217,119,6,.10)',
-      }}>
-        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#92400e', marginBottom: '.6rem' }}>
-          {t('personalLoan.noteTitle')}
-        </div>
-        <p style={{ color: '#78350f', fontSize: '.93rem', lineHeight: 1.65 }}>
-          {t('personalLoan.noteBody')}
-        </p>
-      </div>
-
       {/* ── Section 2: Calculator + Rate Check ── */}
       <div className="two-col" style={{ marginBottom: '1.5rem' }}>
 
