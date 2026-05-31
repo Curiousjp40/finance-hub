@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { monthlyPayment, amortizeSchedule, fmtUSD, fmtUSD2 } from '../utils/finance';
 import { useT } from '../LanguageContext';
 import { useLocalState } from '../utils/useLocalState';
@@ -57,11 +57,11 @@ function calcFutureValueNew(msrp, termYears) {
 /* ─── static data ───────────────────────────────────────────── */
 const MAKES = [...new Set(VEHICLES.map(v => v.make))].sort();
 const CURRENT_YEAR = 2025;
-const YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR - i); // 2025–2020
+const YEARS = Array.from({ length: 26 }, (_, i) => CURRENT_YEAR - i); // 2025–2000
 
 const DEFAULT_VEHICLES = [
   { id: 1, name: 'Vehicle 1', price: 35000, down: 5000, tradeIn: 0, rate: 6.5, term: 60, extra: 0,
-    isNew: true, make: '', model: '', trim: '', year: CURRENT_YEAR, mileage: 0, condition: 'excellent' },
+    isNew: true, make: '', model: '', trim: '', year: CURRENT_YEAR, mileage: 0, condition: 'excellent', actualInsurance: 0 },
 ];
 
 export default function CarLoan() {
@@ -76,7 +76,7 @@ export default function CarLoan() {
     const name = newName.trim() || `Vehicle ${nextId}`;
     setVehicles(prev => [...prev, {
       id: nextId, name, price: 25000, down: 3000, tradeIn: 0, rate: 6.5, term: 60, extra: 0,
-      isNew: true, make: '', model: '', trim: '', year: CURRENT_YEAR, mileage: 0, condition: 'excellent',
+      isNew: true, make: '', model: '', trim: '', year: CURRENT_YEAR, mileage: 0, condition: 'excellent', actualInsurance: 0,
     }]);
     setNextId(n => n + 1);
     setNewName('');
@@ -145,11 +145,13 @@ export default function CarLoan() {
     const insAnnual  = insRange  ? (insRange[0]  + insRange[1])  / 2 : 0;
     const mntAnnual  = mntRange  ? (mntRange[0]  + mntRange[1])  / 2 : 0;
 
+    const actualInsMonthly = v.actualInsurance > 0 ? v.actualInsurance : null;
     const tcoLoan        = totalPaid;
-    const tcoInsurance   = insAnnual  * termYears;
+    const tcoInsurance   = actualInsMonthly != null ? actualInsMonthly * v.term : insAnnual * termYears;
     const tcoMaintenance = mntAnnual  * termYears;
     const tcoDeprec      = deprecDuring;
     const tcoTotal       = tcoLoan + tcoInsurance + tcoMaintenance + tcoDeprec;
+    const isActualIns    = actualInsMonthly != null;
 
     const isUpsideDown = marketValue > 0 && principal > marketValue;
 
@@ -158,7 +160,7 @@ export default function CarLoan() {
       vehMeta, marketValue, futureValue, deprecDuring,
       insRange, mntRange, insAnnual, mntAnnual,
       tcoLoan, tcoInsurance, tcoMaintenance, tcoDeprec, tcoTotal,
-      isUpsideDown,
+      isUpsideDown, isActualIns,
     };
   }), [vehicles]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -326,10 +328,37 @@ export default function CarLoan() {
                       <ValueStat label={t('car.futureValue')} value={fmtUSD(vr.futureValue)} />
                       <ValueStat label={t('car.depreciationDuring')} value={fmtUSD(vr.deprecDuring)} color="var(--danger)" />
                       {vr.insRange && (
-                        <ValueStat label={t('car.insuranceEst')} value={`${fmtUSD(vr.insRange[0])}–${fmtUSD(vr.insRange[1])}`} sub={t('car.perYear')} />
+                        <ValueStat
+                          label={t('car.insuranceEst')}
+                          value={`${fmtUSD(vr.insRange[0])}–${fmtUSD(vr.insRange[1])}`}
+                          sub={t('car.perYear')}
+                        />
                       )}
                       {vr.mntRange && (
                         <ValueStat label={t('car.maintenanceEst')} value={`${fmtUSD(vr.mntRange[0])}–${fmtUSD(vr.mntRange[1])}`} sub={t('car.perYear')} />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Actual insurance input */}
+                  {vr.vehMeta && vr.trim && (
+                    <div style={{ marginTop:'.85rem', display:'flex', alignItems:'center', gap:'.75rem', flexWrap:'wrap' }}>
+                      <label style={{ fontSize:'.82rem', color:'var(--muted)', fontWeight:600, whiteSpace:'nowrap' }}>
+                        {t('car.actualInsuranceLabel')}
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={5}
+                        placeholder={t('car.actualInsurancePlaceholder')}
+                        value={vr.actualInsurance || ''}
+                        onChange={e => updateVehicle(vr.id, 'actualInsurance', e.target.value === '' ? 0 : +e.target.value)}
+                        style={{ width:130, padding:'.35rem .65rem', border:'1.5px solid var(--border)', borderRadius:7, fontSize:'.85rem' }}
+                      />
+                      {vr.actualInsurance > 0 && (
+                        <span style={{ fontSize:'.78rem', color:'var(--success)', fontWeight:600 }}>
+                          ✓ {t('car.actualInsuranceUsed')}
+                        </span>
                       )}
                     </div>
                   )}
@@ -458,12 +487,46 @@ export default function CarLoan() {
                         {t('car.tcoOver').replace('{n}', vr.term)}
                       </span>
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px, 1fr))', gap:'.6rem' }}>
-                      <TCORow label={t('car.tcoLoanCost')}    value={fmtUSD(vr.tcoLoan)} />
-                      <TCORow label={t('car.tcoInsurance')}   value={fmtUSD(vr.tcoInsurance)} />
-                      <TCORow label={t('car.tcoMaintenance')} value={fmtUSD(vr.tcoMaintenance)} />
-                      <TCORow label={t('car.tcoDeprec')}      value={fmtUSD(vr.tcoDeprec)} color="var(--danger)" />
-                      <TCORow label={t('car.tcoGrandTotal')}  value={fmtUSD(vr.tcoTotal)} bold color="var(--navy)" />
+                    <div style={{ display:'flex', gap:'1.25rem', flexWrap:'wrap', alignItems:'flex-start' }}>
+                      {/* Row breakdown */}
+                      <div style={{ flex:'1', minWidth:200, display:'grid', gap:'.6rem' }}>
+                        <TCORow label={t('car.tcoLoanCost')}    value={fmtUSD(vr.tcoLoan)} />
+                        <TCORow
+                          label={vr.isActualIns ? t('car.tcoInsuranceActual') : t('car.tcoInsurance')}
+                          value={fmtUSD(vr.tcoInsurance)}
+                          highlight={vr.isActualIns}
+                        />
+                        <TCORow label={t('car.tcoMaintenance')} value={fmtUSD(vr.tcoMaintenance)} />
+                        <TCORow label={t('car.tcoDeprec')}      value={fmtUSD(vr.tcoDeprec)} color="var(--danger)" />
+                        <TCORow label={t('car.tcoGrandTotal')}  value={fmtUSD(vr.tcoTotal)} bold color="var(--navy)" />
+                      </div>
+                      {/* Pie chart */}
+                      {vr.tcoTotal > 0 && (
+                        <div style={{ flex:'0 0 220px', height:180 }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={[
+                                  { name: t('car.tcoLoanCost'),    value: Math.round(vr.tcoLoan) },
+                                  { name: vr.isActualIns ? t('car.tcoInsuranceActual') : t('car.tcoInsurance'), value: Math.round(vr.tcoInsurance) },
+                                  { name: t('car.tcoMaintenance'), value: Math.round(vr.tcoMaintenance) },
+                                  { name: t('car.tcoDeprec'),      value: Math.round(vr.tcoDeprec) },
+                                ].filter(d => d.value > 0)}
+                                cx="50%" cy="50%"
+                                innerRadius={45} outerRadius={72}
+                                dataKey="value"
+                                paddingAngle={2}
+                              >
+                                {['#1a5276','#2e86c1','#27ae60','#c0392b'].map((color, i) => (
+                                  <Cell key={i} fill={color} />
+                                ))}
+                              </Pie>
+                              <Tooltip formatter={v => fmtUSD(v)} />
+                              <Legend iconSize={10} wrapperStyle={{ fontSize:'.72rem' }} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -530,10 +593,15 @@ function ValueStat({ label, value, sub, color }) {
   );
 }
 
-function TCORow({ label, value, color, bold }) {
+function TCORow({ label, value, color, bold, highlight }) {
   return (
-    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', background:'#fff', border:'1px solid var(--border)', borderRadius:8, padding:'.55rem .8rem' }}>
-      <span style={{ fontSize:'.82rem', color:'var(--muted)', fontWeight: bold ? 700 : 500 }}>{label}</span>
+    <div style={{
+      display:'flex', justifyContent:'space-between', alignItems:'center',
+      background: highlight ? '#eafaf1' : '#fff',
+      border: `1px solid ${highlight ? 'var(--success)' : 'var(--border)'}`,
+      borderRadius:8, padding:'.55rem .8rem',
+    }}>
+      <span style={{ fontSize:'.82rem', color: highlight ? 'var(--success)' : 'var(--muted)', fontWeight: bold ? 700 : 500 }}>{label}</span>
       <span style={{ fontWeight: bold ? 800 : 600, fontSize: bold ? '1rem' : '.9rem', color: color || 'var(--text)' }}>{value}</span>
     </div>
   );

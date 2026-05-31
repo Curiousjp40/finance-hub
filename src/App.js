@@ -10,21 +10,29 @@ import AmexReferral from './components/AmexReferral';
 import Retirement   from './components/Retirement';
 import PersonalLoan from './components/PersonalLoan';
 
+const NAV_GROUPS = [
+  { id: 'loans',      labelKey: 'nav.groupLoans',    ids: ['car', 'home', 'personalLoan'] },
+  { id: 'planning',   labelKey: 'nav.groupPlanning', ids: ['budget', 'tax'] },
+  { id: 'cards',      labelKey: 'nav.groupCards',    ids: ['cc', 'amex'] },
+  { id: 'retirement', labelKey: 'nav.retirement',    ids: ['retirement'], solo: true },
+];
+
 function AppInner() {
   const [tab,      setTab]      = useState('car');
   const [menuOpen, setMenuOpen] = useState(false);
   const { toggle } = useContext(LanguageContext);
   const t = useT();
 
-  const TABS = [
-    { id: 'car',        label: t('nav.car')        },
-    { id: 'home',       label: t('nav.home')       },
-    { id: 'budget',     label: t('nav.budget')     },
-    { id: 'tax',        label: t('nav.tax')        },
-    { id: 'cc',         label: t('nav.cc')         },
+  // Flat list for mobile menu
+  const ALL_TABS = [
+    { id: 'car',         label: t('nav.car')         },
+    { id: 'home',        label: t('nav.home')        },
+    { id: 'personalLoan',label: t('nav.personalLoan')},
+    { id: 'budget',      label: t('nav.budget')      },
+    { id: 'tax',         label: t('nav.tax')         },
+    { id: 'cc',          label: t('nav.cc')          },
     { id: 'amex',        label: t('nav.amex')        },
     { id: 'retirement',  label: t('nav.retirement')  },
-    { id: 'personalLoan',label: t('nav.personalLoan')},
   ];
 
   useEffect(() => {
@@ -47,26 +55,45 @@ function AppInner() {
 
           {/* Desktop nav — hidden on mobile via CSS */}
           <nav className="nav">
-            {TABS.map(tb => (
-              <button
-                key={tb.id}
-                className={`nav-btn${tab === tb.id ? ' active' : ''}`}
-                onClick={() => setTab(tb.id)}
-              >
-                {tb.label}
-              </button>
-            ))}
+            {NAV_GROUPS.map(group => {
+              const isGroupActive = group.ids.includes(tab);
+              if (group.solo) {
+                return (
+                  <button
+                    key={group.id}
+                    className={`nav-btn${isGroupActive ? ' active' : ''}`}
+                    onClick={() => setTab(group.ids[0])}
+                  >
+                    {t(group.labelKey)}
+                  </button>
+                );
+              }
+              return (
+                <div key={group.id} className="nav-group">
+                  <button className={`nav-btn nav-group-trigger${isGroupActive ? ' active' : ''}`}>
+                    {t(group.labelKey)} <span className="nav-arrow">▾</span>
+                  </button>
+                  <div className="nav-dropdown">
+                    {group.ids.map(id => (
+                      <button
+                        key={id}
+                        className={`nav-dropdown-item${tab === id ? ' active' : ''}`}
+                        onClick={() => setTab(id)}
+                      >
+                        {t(`nav.${id}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Lang toggle pinned to far right */}
             <button
               className="nav-btn lang-toggle"
               onClick={toggle}
               title={t('nav.langLabel')}
-              style={{
-                marginLeft: '.5rem',
-                borderLeft: '1px solid rgba(255,255,255,.25)',
-                paddingLeft: '1rem',
-                fontWeight: 700,
-                color: 'var(--gold)',
-              }}
+              style={{ marginLeft:'auto', fontWeight:700, color:'var(--gold)' }}
             >
               🌐 {t('nav.langBtn')}
             </button>
@@ -86,7 +113,7 @@ function AppInner() {
 
         {/* Mobile dropdown menu */}
         <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
-          {TABS.map(tb => (
+          {ALL_TABS.map(tb => (
             <button
               key={tb.id}
               className={`mobile-nav-btn${tab === tb.id ? ' active' : ''}`}
@@ -107,12 +134,12 @@ function AppInner() {
       <main className="main">
         <h1 className="page-title">{t(`titles.${tab}`)}</h1>
 
-        {tab === 'car'        && <CarLoan />}
-        {tab === 'home'       && <HomeLoan />}
-        {tab === 'budget'     && <Budget />}
-        {tab === 'tax'        && <NetIncome />}
-        {tab === 'cc'         && <CreditCard />}
-        {tab === 'amex'       && <AmexReferral />}
+        {tab === 'car'         && <CarLoan />}
+        {tab === 'home'        && <HomeLoan />}
+        {tab === 'budget'      && <Budget />}
+        {tab === 'tax'         && <NetIncome />}
+        {tab === 'cc'          && <CreditCard />}
+        {tab === 'amex'        && <AmexReferral />}
         {tab === 'retirement'  && <Retirement />}
         {tab === 'personalLoan'&& <PersonalLoan />}
       </main>
