@@ -318,6 +318,7 @@ const translations = {
       moreRows:          'more rows — scroll table to see all',
       importHowTo:       'Chase: Account → Download Account Activity → CSV. BofA: Statements → Download → CSV format. Capital One: Transactions → Download. Discover: Manage → Download Transactions. Amex: Statements → Export.',
       orImportHint:      'Have a bank CSV?',
+      recentInCat:       'Recent',
     },
 
     tax: {
@@ -826,6 +827,7 @@ const translations = {
       moreRows:          'más filas — desplaza la tabla para ver todas',
       importHowTo:       'Chase: Cuenta → Descargar actividad → CSV. BofA: Estados → Descargar → formato CSV. Capital One: Transacciones → Descargar. Discover: Administrar → Descargar Transacciones. Amex: Estados → Exportar.',
       orImportHint:      '¿Tienes un CSV de tu banco?',
+      recentInCat:       'Recientes',
     },
 
     tax: {

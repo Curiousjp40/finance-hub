@@ -937,6 +937,75 @@ tbody td:first-child { text-align: left; font-weight: 500; }
 }
 
 /* ═══════════════════════════════════════════════════════════
+   Category Card — expanded quick-add state
+═══════════════════════════════════════════════════════════ */
+
+.budget-cat-card.expanded {
+  box-shadow: 0 8px 28px rgba(10,35,66,.2);
+  z-index: 2;
+  position: relative;
+}
+
+/* Quick-add form that slides in when a card is expanded */
+.bcc-quick-form {
+  margin-top: .75rem;
+  padding-top: .7rem;
+  border-top: 1px solid var(--border);
+  animation: bcc-open .18s ease;
+}
+
+@keyframes bcc-open {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.bcc-qf-input {
+  width: 100%; padding: .38rem .55rem; box-sizing: border-box;
+  border: 1.5px solid var(--border); border-radius: 7px;
+  font-size: .82rem; margin-bottom: .4rem; color: var(--text);
+  background: var(--white);
+}
+.bcc-qf-input:focus { outline: none; border-color: var(--accent); }
+
+.bcc-qf-row { display: flex; gap: .35rem; margin-bottom: .4rem; }
+
+.bcc-qf-amt {
+  flex: 1; min-width: 0; padding: .38rem .55rem;
+  border: 1.5px solid var(--border); border-radius: 7px;
+  font-size: .82rem; color: var(--text); background: var(--white);
+}
+.bcc-qf-amt:focus { outline: none; border-color: var(--accent); }
+
+.bcc-qf-date {
+  flex: 1.4; min-width: 0; padding: .38rem .4rem;
+  border: 1.5px solid var(--border); border-radius: 7px;
+  font-size: .76rem; color: var(--text); background: var(--white);
+}
+.bcc-qf-date:focus { outline: none; border-color: var(--accent); }
+
+.bcc-qf-btn { width: 100%; font-size: .82rem; padding: .42rem; margin-bottom: .5rem; }
+
+/* Recent expenses list inside expanded card */
+.bcc-recent-list { border-top: 1px solid var(--border); padding-top: .4rem; }
+.bcc-recent-header {
+  font-size: .68rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: .3rem;
+}
+.bcc-recent-row {
+  display: flex; align-items: center; gap: .4rem;
+  padding: .22rem 0; font-size: .78rem;
+}
+.bcc-recent-date { color: var(--muted); flex-shrink: 0; font-size: .72rem; min-width: 34px; }
+.bcc-recent-desc { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.bcc-recent-amt  { font-weight: 700; color: var(--navy); flex-shrink: 0; font-size: .8rem; }
+.bcc-recent-del  {
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  font-size: .72rem; padding: .1rem .2rem; flex-shrink: 0;
+  opacity: 0; transition: opacity .15s; line-height: 1;
+}
+.bcc-recent-row:hover .bcc-recent-del { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════
    CSV Import UI
 ═══════════════════════════════════════════════════════════ */
 

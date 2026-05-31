@@ -157,13 +157,14 @@ export default function Budget() {
   // ── UI state ─────────────────────────────────────────────────
   const [activeTab, setActiveTab]           = useState('overview');
   const [activePieIdx, setActivePieIdx]     = useState(null);
-  const [highlightedCat, setHighlightedCat] = useState(null);
+  const [expandedCat, setExpandedCat]       = useState(null);
   const [calMonth, setCalMonth]             = useState(new Date().getMonth());
   const [calYear, setCalYear]               = useState(new Date().getFullYear());
   const [editingLimit, setEditingLimit]     = useState(null);
   const [newCatName, setNewCatName]         = useState('');
   const [selectedDay, setSelectedDay]       = useState(null);
   const [expForm, setExpForm]               = useState({ date: todayStr(), description: '', amount: '', categoryId: 'housing' });
+  const [quickForm, setQuickForm]           = useState({ description: '', amount: 0, date: todayStr() });
   const [assetForm, setAssetForm]           = useState({ name: '', value: '' });
   const [liabForm, setLiabForm]             = useState({ name: '', value: '' });
 
@@ -264,6 +265,16 @@ export default function Budget() {
     return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
   }, [expenses]);
 
+  const recentByCat = useMemo(() => {
+    const map = {};
+    const sorted = [...expenses].sort((a, b) => b.date.localeCompare(a.date));
+    for (const exp of sorted) {
+      if (!map[exp.categoryId]) map[exp.categoryId] = [];
+      if (map[exp.categoryId].length < 3) map[exp.categoryId].push(exp);
+    }
+    return map;
+  }, [expenses]);
+
   const MONTH_NAMES = lang === 'es' ? MONTH_ES : MONTH_EN;
 
   function prevMonth() { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); }
@@ -286,6 +297,13 @@ export default function Budget() {
     if (!name) return;
     setCustomCats(prev => [...prev, { id: 'custom-' + uid(), name, icon: '📦', color: '#7f8c8d', type: 'want' }]);
     setNewCatName('');
+  }
+
+  function addQuickExpense(catId) {
+    const amt = Number(quickForm.amount);
+    if (!quickForm.description.trim() || !quickForm.date || !(amt > 0)) return;
+    setExpenses(prev => [{ id: uid(), date: quickForm.date, description: quickForm.description.trim(), amount: amt, categoryId: catId }, ...prev]);
+    setQuickForm(f => ({ ...f, description: '', amount: 0 }));
   }
 
   // ── CSV / PDF Import ─────────────────────────────────────────
@@ -391,25 +409,33 @@ export default function Budget() {
         <>
           <div className="budget-cats-grid">
             {allCats.map(cat => {
-              const spent    = spentByCat[cat.id] ?? 0;
-              const pct      = cat.limit > 0 ? (spent / cat.limit) * 100 : 0;
-              const indColor = pct >= 100 ? 'var(--danger)' : pct >= 75 ? '#d97706' : 'var(--success)';
-              const isHL     = highlightedCat === cat.id;
+              const spent         = spentByCat[cat.id] ?? 0;
+              const pct           = cat.limit > 0 ? (spent / cat.limit) * 100 : 0;
+              const indColor      = pct >= 100 ? 'var(--danger)' : pct >= 75 ? '#d97706' : 'var(--success)';
+              const isExp         = expandedCat === cat.id;
+              const recentCatExps = recentByCat[cat.id] ?? [];
               return (
-                <div key={cat.id} className={`budget-cat-card${isHL ? ' hl' : ''}`}
+                <div key={cat.id}
+                  className={`budget-cat-card${isExp ? ' hl expanded' : ''}`}
                   style={{ borderLeftColor: cat.color }}
-                  onClick={() => setHighlightedCat(isHL ? null : cat.id)}>
+                  onClick={() => setExpandedCat(isExp ? null : cat.id)}>
+
+                  {/* Header */}
                   <div className="bcc-header">
                     <span className="bcc-icon">{cat.icon}</span>
                     <span className="bcc-name">{cat.name}</span>
                     {cat.limit > 0 && <span className="bcc-indicator" style={{ background: indColor }} />}
                   </div>
+
                   <div className="bcc-spent">{fmtUSD(spent)}</div>
+
                   {cat.limit > 0 && (
                     <div className="bcc-progress-track">
                       <div className="bcc-progress-fill" style={{ width:`${Math.min(100,pct)}%`, background: indColor }} />
                     </div>
                   )}
+
+                  {/* Budget limit row */}
                   <div className="bcc-meta">
                     {cat.limit > 0 && <span style={{ color: indColor, fontWeight:700 }}>{pct.toFixed(0)}%</span>}
                     {editingLimit === cat.id ? (
@@ -425,6 +451,47 @@ export default function Budget() {
                       </span>
                     )}
                   </div>
+
+                  {/* Quick-add expense form — shown when card is expanded */}
+                  {isExp && (
+                    <div className="bcc-quick-form" onClick={e => e.stopPropagation()}>
+                      <input className="bcc-qf-input" type="text"
+                        placeholder={t('budget.descPlaceholder')}
+                        value={quickForm.description}
+                        onChange={e => setQuickForm(f => ({ ...f, description: e.target.value }))}
+                        onKeyDown={e => e.key === 'Enter' && addQuickExpense(cat.id)}
+                        autoFocus />
+                      <div className="bcc-qf-row">
+                        <NumericInput className="bcc-qf-amt"
+                          value={quickForm.amount}
+                          placeholder="0.00"
+                          onChange={v => setQuickForm(f => ({ ...f, amount: v }))}
+                          onKeyDown={e => e.key === 'Enter' && addQuickExpense(cat.id)} />
+                        <input className="bcc-qf-date" type="date"
+                          value={quickForm.date}
+                          onChange={e => setQuickForm(f => ({ ...f, date: e.target.value }))} />
+                      </div>
+                      <button className="btn btn-primary bcc-qf-btn"
+                        onClick={() => addQuickExpense(cat.id)}>
+                        + {t('budget.add')}
+                      </button>
+                      {recentCatExps.length > 0 && (
+                        <div className="bcc-recent-list">
+                          <div className="bcc-recent-header">{t('budget.recentInCat')}</div>
+                          {recentCatExps.map(exp => (
+                            <div key={exp.id} className="bcc-recent-row">
+                              <span className="bcc-recent-date">{exp.date.slice(5)}</span>
+                              <span className="bcc-recent-desc">{exp.description}</span>
+                              <span className="bcc-recent-amt">{fmtUSD(exp.amount)}</span>
+                              <button className="bcc-recent-del"
+                                onClick={() => setExpenses(prev => prev.filter(x => x.id !== exp.id))}>✕</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {!cat.isBuiltIn && (
                     <button className="bcc-remove"
                       onClick={e => { e.stopPropagation(); setCustomCats(prev => prev.filter(c => c.id !== cat.id)); }}>✕</button>
@@ -493,31 +560,40 @@ export default function Budget() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie data={pieData} cx="50%" cy="50%" innerRadius={72} outerRadius={110}
-                          dataKey="value" activeIndex={activePieIdx} activeShape={renderActiveShape}
+                          dataKey="value"
+                          activeIndex={activePieIdx ?? (expandedCat ? pieData.findIndex(d => d.id === expandedCat) : null)}
+                          activeShape={renderActiveShape}
                           onMouseEnter={(_, idx) => setActivePieIdx(idx)}
                           onMouseLeave={() => setActivePieIdx(null)}
-                          onClick={(_, idx) => { const cat = pieData[idx]; setHighlightedCat(h => h === cat.id ? null : cat.id); }}
+                          onClick={(_, idx) => { const cat = pieData[idx]; setExpandedCat(c => c === cat.id ? null : cat.id); }}
                           style={{ cursor:'pointer' }}>
-                          {pieData.map((entry, idx) => (
-                            <Cell key={idx} fill={entry.color}
-                              opacity={activePieIdx === null || activePieIdx === idx ? 1 : 0.45} />
-                          ))}
+                          {pieData.map((entry, idx) => {
+                            const expIdx = expandedCat ? pieData.findIndex(d => d.id === expandedCat) : -1;
+                            const dimByExp = expIdx >= 0 && activePieIdx === null && expIdx !== idx;
+                            return (
+                              <Cell key={idx} fill={entry.color}
+                                opacity={activePieIdx !== null ? (activePieIdx === idx ? 1 : 0.45) : (dimByExp ? 0.45 : 1)} />
+                            );
+                          })}
                         </Pie>
                         <Tooltip formatter={v => fmtUSD(v)} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
                   <div className="budget-pie-legend">
-                    {pieData.map((entry, idx) => (
-                      <div key={idx} className="bpl-item"
-                        style={{ opacity: activePieIdx === null || activePieIdx === idx ? 1 : 0.4 }}
-                        onMouseEnter={() => setActivePieIdx(idx)} onMouseLeave={() => setActivePieIdx(null)}
-                        onClick={() => setHighlightedCat(h => h === entry.id ? null : entry.id)}>
-                        <span className="bpl-dot" style={{ background: entry.color }} />
-                        <span className="bpl-name">{entry.name}</span>
-                        <span className="bpl-val">{fmtUSD(entry.value)}</span>
-                      </div>
-                    ))}
+                    {pieData.map((entry, idx) => {
+                      const dimByExp = expandedCat && activePieIdx === null && expandedCat !== entry.id;
+                      return (
+                        <div key={idx} className="bpl-item"
+                          style={{ opacity: activePieIdx !== null ? (activePieIdx === idx ? 1 : 0.4) : (dimByExp ? 0.4 : 1) }}
+                          onMouseEnter={() => setActivePieIdx(idx)} onMouseLeave={() => setActivePieIdx(null)}
+                          onClick={() => setExpandedCat(c => c === entry.id ? null : entry.id)}>
+                          <span className="bpl-dot" style={{ background: entry.color }} />
+                          <span className="bpl-name">{entry.name}</span>
+                          <span className="bpl-val">{fmtUSD(entry.value)}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </>
               ) : (
