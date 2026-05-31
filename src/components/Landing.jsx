@@ -2,14 +2,20 @@ import { useT } from '../LanguageContext';
 import CardPromo from './CardPromo';
 
 const TOOLS = [
-  { id: 'car',          icon: '🚗', navKey: 'nav.car',          descKey: 'landing.descCar' },
-  { id: 'home',         icon: '🏠', navKey: 'nav.home',         descKey: 'landing.descHome' },
-  { id: 'budget',       icon: '📝', navKey: 'nav.budget',       descKey: 'landing.descBudget' },
-  { id: 'tax',          icon: '💼', navKey: 'nav.tax',          descKey: 'landing.descTax' },
-  { id: 'cc',           icon: '💳', navKey: 'nav.cc',           descKey: 'landing.descCc' },
-  { id: 'amex',         icon: '⭐', navKey: 'nav.amex',         descKey: 'landing.descAmex' },
-  { id: 'retirement',   icon: '🏦', navKey: 'nav.retirement',   descKey: 'landing.descRetirement' },
-  { id: 'personalLoan', icon: '📋', navKey: 'nav.personalLoan', descKey: 'landing.descPersonalLoan' },
+  { id: 'car',           icon: '🚗', navKey: 'nav.car',           descKey: 'landing.descCar' },
+  { id: 'home',          icon: '🏠', navKey: 'nav.home',          descKey: 'landing.descHome' },
+  { id: 'budget',        icon: '📝', navKey: 'nav.budget',        descKey: 'landing.descBudget' },
+  { id: 'tax',           icon: '💼', navKey: 'nav.tax',           descKey: 'landing.descTax' },
+  { id: 'cc',            icon: '💳', navKey: 'nav.cc',            descKey: 'landing.descCc' },
+  { id: 'amex',          icon: '⭐', navKey: 'nav.amex',          descKey: 'landing.descAmex' },
+  { id: 'retirement',    icon: '🏦', navKey: 'nav.retirement',    descKey: 'landing.descRetirement' },
+  { id: 'personalLoan',  icon: '📋', navKey: 'nav.personalLoan',  descKey: 'landing.descPersonalLoan' },
+  { id: 'bills',         icon: '📅', navKey: 'nav.bills',         descKey: 'landing.descBills' },
+  { id: 'debt',          icon: '💸', navKey: 'nav.debt',          descKey: 'landing.descDebt' },
+  { id: 'emergency',     icon: '🆘', navKey: 'nav.emergency',     descKey: 'landing.descEmergency' },
+  { id: 'savings',       icon: '🎯', navKey: 'nav.savings',       descKey: 'landing.descSavings' },
+  { id: 'subscriptions', icon: '📱', navKey: 'nav.subscriptions', descKey: 'landing.descSubscriptions' },
+  { id: 'military',      icon: '🎖',  navKey: 'nav.military',      descKey: 'landing.descMilitary' },
 ];
 
 export default function Landing({ onNavigate }) {
@@ -92,7 +98,7 @@ export default function Landing({ onNavigate }) {
           {/* Stats row */}
           <div className="landing-stats">
             {[
-              { num: '8',    label: t('landing.statTools') },
+              { num: '14',   label: t('landing.statTools') },
               { num: '100%', label: t('landing.statFree')  },
               { num: '0',    label: t('landing.statAds')   },
             ].map((s, i) => (
