@@ -1,24 +1,29 @@
 import { useState, useContext, useEffect } from 'react';
 import './styles.css';
 import { LanguageProvider, LanguageContext, useT } from './LanguageContext';
-import Landing             from './components/Landing';
-import CarLoan             from './components/CarLoan';
-import HomeLoan            from './components/HomeLoan';
-import Budget              from './components/Budget';
-import NetIncome           from './components/NetIncome';
-import CreditCard          from './components/CreditCard';
-import AmexReferral        from './components/AmexReferral';
-import Retirement          from './components/Retirement';
-import PersonalLoan        from './components/PersonalLoan';
-import CardPromo           from './components/CardPromo';
-import MilitaryPay         from './components/MilitaryPay';
+import Landing               from './components/Landing';
+import CarLoan               from './components/CarLoan';
+import HomeLoan              from './components/HomeLoan';
+import Budget                from './components/Budget';
+import NetIncome             from './components/NetIncome';
+import CreditCard            from './components/CreditCard';
+import AmexReferral          from './components/AmexReferral';
+import Retirement            from './components/Retirement';
+import PersonalLoan          from './components/PersonalLoan';
+import CardPromo             from './components/CardPromo';
+import MilitaryPay           from './components/MilitaryPay';
+import BillTracker           from './components/BillTracker';
+import DebtTracker           from './components/DebtTracker';
+import EmergencyFund         from './components/EmergencyFund';
+import SavingsGoals          from './components/SavingsGoals';
+import SubscriptionTracker   from './components/SubscriptionTracker';
 
 const NAV_GROUPS = [
-  { id: 'loans',      labelKey: 'nav.groupLoans',    ids: ['car', 'home', 'personalLoan'] },
-  { id: 'planning',   labelKey: 'nav.groupPlanning', ids: ['budget', 'tax'] },
-  { id: 'cards',      labelKey: 'nav.groupCards',    ids: ['cc', 'amex'] },
-  { id: 'retirement', labelKey: 'nav.retirement',    ids: ['retirement'], solo: true },
-  { id: 'military',   labelKey: 'nav.groupMilitary', ids: ['military'], solo: true },
+  { id: 'loans',       labelKey: 'nav.groupLoans',       ids: ['car', 'home', 'personalLoan'] },
+  { id: 'planning',    labelKey: 'nav.groupPlanning',     ids: ['budget', 'bills', 'debt', 'emergency', 'savings', 'subscriptions'] },
+  { id: 'income',      labelKey: 'nav.groupIncome',       ids: ['tax', 'military'] },
+  { id: 'investments', labelKey: 'nav.groupInvestments',  ids: ['retirement'] },
+  { id: 'cards',       labelKey: 'nav.groupCards',        ids: ['amex', 'cc'] },
 ];
 
 function AppInner() {
@@ -27,17 +32,21 @@ function AppInner() {
   const { toggle } = useContext(LanguageContext);
   const t = useT();
 
-  // Flat list for mobile menu
   const ALL_TABS = [
-    { id: 'car',          label: t('nav.car')          },
-    { id: 'home',         label: t('nav.home')         },
-    { id: 'personalLoan', label: t('nav.personalLoan') },
-    { id: 'budget',       label: t('nav.budget')       },
-    { id: 'tax',          label: t('nav.tax')          },
-    { id: 'cc',           label: t('nav.cc')           },
-    { id: 'amex',         label: t('nav.amex')         },
-    { id: 'retirement',   label: t('nav.retirement')   },
-    { id: 'military',     label: t('nav.military')     },
+    { id: 'car',           label: t('nav.car')           },
+    { id: 'home',          label: t('nav.home')          },
+    { id: 'personalLoan',  label: t('nav.personalLoan')  },
+    { id: 'budget',        label: t('nav.budget')        },
+    { id: 'bills',         label: t('nav.bills')         },
+    { id: 'debt',          label: t('nav.debt')          },
+    { id: 'emergency',     label: t('nav.emergency')     },
+    { id: 'savings',       label: t('nav.savings')       },
+    { id: 'subscriptions', label: t('nav.subscriptions') },
+    { id: 'tax',           label: t('nav.tax')           },
+    { id: 'military',      label: t('nav.military')      },
+    { id: 'retirement',    label: t('nav.retirement')    },
+    { id: 'amex',          label: t('nav.amex')          },
+    { id: 'cc',            label: t('nav.cc')            },
   ];
 
   useEffect(() => {
@@ -54,7 +63,7 @@ function AppInner() {
     <div className="app">
       <header className="header">
         <div className="header-inner">
-          {/* Logo — always navigates home */}
+          {/* Logo */}
           <div
             className="logo"
             onClick={() => navigate('landing')}
@@ -72,17 +81,6 @@ function AppInner() {
           <nav className="nav">
             {NAV_GROUPS.map(group => {
               const isGroupActive = group.ids.includes(tab);
-              if (group.solo) {
-                return (
-                  <button
-                    key={group.id}
-                    className={`nav-btn${isGroupActive ? ' active' : ''}`}
-                    onClick={() => navigate(group.ids[0])}
-                  >
-                    {t(group.labelKey)}
-                  </button>
-                );
-              }
               return (
                 <div key={group.id} className="nav-group">
                   <button className={`nav-btn nav-group-trigger${isGroupActive ? ' active' : ''}`}>
@@ -103,7 +101,7 @@ function AppInner() {
               );
             })}
 
-            {/* Lang toggle pinned to far right */}
+            {/* Lang toggle */}
             <button
               className="nav-btn lang-toggle"
               onClick={toggle}
@@ -157,15 +155,20 @@ function AppInner() {
       ) : (
         <main className="main">
           <h1 className="page-title">{t(`titles.${tab}`)}</h1>
-          {tab === 'car'          && <CarLoan />}
-          {tab === 'home'         && <><HomeLoan /><CardPromo onNavigate={() => navigate('amex')} /></>}
-          {tab === 'budget'       && <Budget />}
-          {tab === 'tax'          && <NetIncome />}
-          {tab === 'cc'           && <CreditCard />}
-          {tab === 'amex'         && <AmexReferral />}
-          {tab === 'retirement'   && <Retirement />}
-          {tab === 'personalLoan' && <PersonalLoan />}
-          {tab === 'military'     && <MilitaryPay />}
+          {tab === 'car'           && <CarLoan />}
+          {tab === 'home'          && <><HomeLoan /><CardPromo onNavigate={() => navigate('amex')} /></>}
+          {tab === 'budget'        && <Budget />}
+          {tab === 'tax'           && <NetIncome />}
+          {tab === 'cc'            && <CreditCard />}
+          {tab === 'amex'          && <AmexReferral />}
+          {tab === 'retirement'    && <Retirement />}
+          {tab === 'personalLoan'  && <PersonalLoan />}
+          {tab === 'military'      && <MilitaryPay />}
+          {tab === 'bills'         && <BillTracker />}
+          {tab === 'debt'          && <DebtTracker />}
+          {tab === 'emergency'     && <EmergencyFund />}
+          {tab === 'savings'       && <SavingsGoals />}
+          {tab === 'subscriptions' && <SubscriptionTracker />}
         </main>
       )}
 

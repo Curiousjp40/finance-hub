@@ -1,20 +1,70 @@
 import { useT } from '../LanguageContext';
 import CardPromo from './CardPromo';
 
-const TOOLS = [
-  { id: 'car',          icon: '🚗', navKey: 'nav.car',          descKey: 'landing.descCar' },
-  { id: 'home',         icon: '🏠', navKey: 'nav.home',         descKey: 'landing.descHome' },
-  { id: 'budget',       icon: '📝', navKey: 'nav.budget',       descKey: 'landing.descBudget' },
-  { id: 'tax',          icon: '💼', navKey: 'nav.tax',          descKey: 'landing.descTax' },
-  { id: 'cc',           icon: '💳', navKey: 'nav.cc',           descKey: 'landing.descCc' },
-  { id: 'amex',         icon: '⭐', navKey: 'nav.amex',         descKey: 'landing.descAmex' },
-  { id: 'retirement',   icon: '🏦', navKey: 'nav.retirement',   descKey: 'landing.descRetirement' },
-  { id: 'personalLoan', icon: '📋', navKey: 'nav.personalLoan', descKey: 'landing.descPersonalLoan' },
-  { id: 'military',     icon: '🎖',  navKey: 'nav.military',     descKey: 'landing.descMilitary' },
+const TOOL_GROUPS = [
+  {
+    id: 'loans',
+    labelKey: 'landing.catLoans',
+    accent: '#2563eb',
+    bg: '#eff6ff',
+    badge: '#dbeafe',
+    badgeText: '#1e40af',
+    tools: [
+      { id: 'car',          icon: '🚗', navKey: 'nav.car',          descKey: 'landing.descCar' },
+      { id: 'home',         icon: '🏠', navKey: 'nav.home',         descKey: 'landing.descHome' },
+      { id: 'personalLoan', icon: '📋', navKey: 'nav.personalLoan', descKey: 'landing.descPersonalLoan' },
+    ],
+  },
+  {
+    id: 'income',
+    labelKey: 'landing.catIncome',
+    accent: '#16a34a',
+    bg: '#f0fdf4',
+    badge: '#dcfce7',
+    badgeText: '#166534',
+    tools: [
+      { id: 'tax',      icon: '💼', navKey: 'nav.tax',      descKey: 'landing.descTax' },
+      { id: 'military', icon: '🎖', navKey: 'nav.military', descKey: 'landing.descMilitary' },
+    ],
+  },
+  {
+    id: 'planning',
+    labelKey: 'landing.catPlanning',
+    accent: '#d97706',
+    bg: '#fffbeb',
+    badge: '#fef3c7',
+    badgeText: '#92400e',
+    tools: [
+      { id: 'budget', icon: '📝', navKey: 'nav.budget', descKey: 'landing.descBudget' },
+      { id: 'cc',     icon: '💳', navKey: 'nav.cc',     descKey: 'landing.descCc' },
+    ],
+  },
+  {
+    id: 'investments',
+    labelKey: 'landing.catInvestments',
+    accent: '#7c3aed',
+    bg: '#faf5ff',
+    badge: '#ede9fe',
+    badgeText: '#4c1d95',
+    tools: [
+      { id: 'retirement', icon: '🏦', navKey: 'nav.retirement', descKey: 'landing.descRetirement' },
+    ],
+  },
+  {
+    id: 'cards',
+    labelKey: 'landing.catCards',
+    accent: '#dc2626',
+    bg: '#fff7ed',
+    badge: '#ffedd5',
+    badgeText: '#9a3412',
+    tools: [
+      { id: 'amex', icon: '⭐', navKey: 'nav.amex', descKey: 'landing.descAmex' },
+    ],
+  },
 ];
 
 export default function Landing({ onNavigate }) {
-  const t  = useT();
+  const t = useT();
 
   return (
     <div className="landing-page">
@@ -39,28 +89,80 @@ export default function Landing({ onNavigate }) {
               {t('landing.heroCta2')} →
             </button>
           </div>
+          <div className="landing-hero-trust">
+            <span>✓ {t('landing.trustFree')}</span>
+            <span>✓ {t('landing.trustPrivate')}</span>
+            <span>✓ {t('landing.trustNoAds')}</span>
+            <span>✓ {t('landing.trustNoSignup')}</span>
+          </div>
         </div>
       </section>
 
-      {/* ── Calculator Cards ───────────────────────────────── */}
+      {/* ── Personal Story ─────────────────────────────────── */}
+      <section className="landing-section landing-story-section">
+        <div className="landing-inner landing-about-inner">
+          <h2 className="landing-h2">{t('landing.aboutTitle')}</h2>
+          <blockquote className="landing-quote">
+            <p>{t('landing.aboutQuote')}</p>
+          </blockquote>
+          <p className="landing-about-body">{t('landing.aboutBody1')}</p>
+          <p className="landing-about-body">{t('landing.aboutBody2')}</p>
+          <div className="landing-stats">
+            {[
+              { num: '14',   label: t('landing.statTools') },
+              { num: '100%', label: t('landing.statFree')  },
+              { num: '0',    label: t('landing.statAds')   },
+            ].map((s, i) => (
+              <div key={i} className="landing-stat">
+                <div className="landing-stat-num">{s.num}</div>
+                <div className="landing-stat-lbl">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Calculator Groups ───────────────────────────────── */}
       <section className="landing-section landing-tools-section">
         <div className="landing-inner">
           <div className="landing-section-head">
             <h2 className="landing-h2">{t('landing.toolsTitle')}</h2>
             <p className="landing-section-sub">{t('landing.toolsSub')}</p>
           </div>
-          <div className="landing-tools-grid">
-            {TOOLS.map(tool => (
-              <button
-                key={tool.id}
-                className="landing-tool-card"
-                onClick={() => onNavigate(tool.id)}
+
+          <div className="tool-groups">
+            {TOOL_GROUPS.map(group => (
+              <div
+                key={group.id}
+                className="tool-group-block"
+                style={{ background: group.bg, borderLeftColor: group.accent }}
               >
-                <span className="landing-tool-icon">{tool.icon}</span>
-                <h3 className="landing-tool-name">{t(tool.navKey)}</h3>
-                <p className="landing-tool-desc">{t(tool.descKey)}</p>
-                <span className="landing-tool-cta">{t('landing.openTool')} →</span>
-              </button>
+                <div className="tool-group-header">
+                  <span
+                    className="tool-group-label"
+                    style={{ background: group.badge, color: group.badgeText }}
+                  >
+                    {t(group.labelKey)}
+                  </span>
+                </div>
+                <div
+                  className={`tool-group-grid tool-group-count-${group.tools.length}`}
+                >
+                  {group.tools.map(tool => (
+                    <button
+                      key={tool.id}
+                      className="landing-tool-card"
+                      onClick={() => onNavigate(tool.id)}
+                      style={{ '--card-accent': group.accent }}
+                    >
+                      <span className="landing-tool-icon">{tool.icon}</span>
+                      <h3 className="landing-tool-name">{t(tool.navKey)}</h3>
+                      <p className="landing-tool-desc">{t(tool.descKey)}</p>
+                      <span className="landing-tool-cta">{t('landing.openTool')} →</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -74,35 +176,6 @@ export default function Landing({ onNavigate }) {
             <p className="landing-section-sub">{t('landing.cardsSub')}</p>
           </div>
           <CardPromo onNavigate={() => onNavigate('amex')} />
-        </div>
-      </section>
-
-      {/* ── About ──────────────────────────────────────────── */}
-      <section className="landing-section landing-about-section">
-        <div className="landing-inner landing-about-inner">
-          <h2 className="landing-h2">{t('landing.aboutTitle')}</h2>
-
-          {/* Story pull-quote */}
-          <blockquote className="landing-quote">
-            <p>{t('landing.aboutQuote')}</p>
-          </blockquote>
-
-          <p className="landing-about-body">{t('landing.aboutBody1')}</p>
-          <p className="landing-about-body">{t('landing.aboutBody2')}</p>
-
-          {/* Stats row */}
-          <div className="landing-stats">
-            {[
-              { num: '9',    label: t('landing.statTools') },
-              { num: '100%', label: t('landing.statFree')  },
-              { num: '0',    label: t('landing.statAds')   },
-            ].map((s, i) => (
-              <div key={i} className="landing-stat">
-                <div className="landing-stat-num">{s.num}</div>
-                <div className="landing-stat-lbl">{s.label}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
