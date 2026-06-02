@@ -59,26 +59,25 @@ const MAKES = [...new Set(VEHICLES.map(v => v.make))].sort();
 const CURRENT_YEAR = 2025;
 const YEARS = Array.from({ length: 26 }, (_, i) => CURRENT_YEAR - i); // 2025–2000
 
-const DEFAULT_VEHICLES = [
-  { id: 1, name: 'Vehicle 1', price: 35000, down: 5000, tradeIn: 0, rate: 6.5, term: 60, extra: 0,
-    isNew: true, make: '', model: '', trim: '', year: CURRENT_YEAR, mileage: 0, condition: 'excellent', actualInsurance: 0 },
-];
+const DEFAULT_VEHICLES = [];
 
 export default function CarLoan() {
   const t = useT();
   const [vehicles,   setVehicles]   = useLocalState('cl-vehicles', DEFAULT_VEHICLES);
-  const [nextId,     setNextId]     = useLocalState('cl-nextid',   2);
+  const [nextId,     setNextId]     = useLocalState('cl-nextid',   1);
   const [newName,    setNewName]    = useState('');
   const [showTable,  setShowTable]  = useLocalState('cl-table',    false);
-  const [expandedId, setExpandedId] = useLocalState('cl-expanded', 1);
+  const [expandedId, setExpandedId] = useLocalState('cl-expanded', null);
 
   function addVehicle() {
-    const name = newName.trim() || `Vehicle ${nextId}`;
+    if (!newName.trim()) return;
+    const id = nextId;
     setVehicles(prev => [...prev, {
-      id: nextId, name, price: 25000, down: 3000, tradeIn: 0, rate: 6.5, term: 60, extra: 0,
+      id, name: newName.trim(), price: 25000, down: 3000, tradeIn: 0, rate: 6.5, term: 60, extra: 0,
       isNew: true, make: '', model: '', trim: '', year: CURRENT_YEAR, mileage: 0, condition: 'excellent', actualInsurance: 0,
     }]);
     setNextId(n => n + 1);
+    setExpandedId(id);
     setNewName('');
   }
 
@@ -228,13 +227,11 @@ export default function CarLoan() {
                 >
                   {expandedId === vr.id ? '▲' : '▼'}
                 </button>
-                {vehicles.length > 1 && (
-                  <button
-                    onClick={() => removeVehicle(vr.id)}
-                    style={{ background:'none', border:'none', color:'var(--danger)', cursor:'pointer', fontSize:'1.1rem', padding:'0 .2rem' }}
-                    title={t('car.removeVehicle')}
-                  >✕</button>
-                )}
+                <button
+                  onClick={() => removeVehicle(vr.id)}
+                  style={{ background:'none', border:'none', color:'var(--danger)', cursor:'pointer', fontSize:'1.1rem', padding:'0 .2rem' }}
+                  title={t('car.removeVehicle')}
+                >✕</button>
               </div>
             </div>
 
