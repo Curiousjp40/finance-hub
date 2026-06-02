@@ -542,29 +542,8 @@ tbody td:first-child { text-align: left; font-weight: 500; }
 .landing-tools-section { background: #f8fafc; }
 .landing-story-section { background: var(--white); }
 
-/* Tool groups */
-.tool-groups { display: flex; flex-direction: column; gap: 2.5rem; }
-
-.tool-group-block { /* no background, no border */ }
-
-.tool-group-header {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  margin-bottom: 1.1rem;
-  padding-bottom: .65rem;
-  border-bottom: 1.5px solid #e2e8f0;
-}
-.tool-group-label {
-  font-size: .72rem;
-  font-weight: 800;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* Always 3-column grid; fewer cards left-align naturally */
-.tool-group-grid {
+/* Featured 3×2 grid (expands to all tools when showAll) */
+.featured-tools-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
@@ -582,7 +561,6 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
   display: flex;
   flex-direction: column;
-  gap: 0;
   height: 100%;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
@@ -616,6 +594,27 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   font-weight: 600;
   color: var(--accent);
   margin-top: auto;
+}
+
+/* View all / view fewer link */
+.view-all-wrap {
+  text-align: center;
+  margin-top: 1.75rem;
+}
+.view-all-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
+  color: var(--accent);
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: .55rem 1.5rem;
+  border-radius: 99px;
+  transition: background .15s, border-color .15s;
+}
+.view-all-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
 /* Cards feature section */
@@ -675,7 +674,7 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   .landing-hero-sub { font-size: .95rem; }
   .landing-section { padding: 3rem 1.25rem; }
   .landing-h2 { font-size: 1.55rem; }
-  .tool-group-grid { grid-template-columns: repeat(2, 1fr); }
+  .featured-tools-grid { grid-template-columns: repeat(2, 1fr); }
   .landing-tool-card { padding: 1.1rem 1rem 1rem; }
   .landing-tool-icon { font-size: 1.5rem; margin-bottom: .65rem; }
   .landing-stats { gap: 1.25rem; }
@@ -683,13 +682,12 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   .landing-cta-btns { flex-direction: column; align-items: center; }
   .landing-cta-btns .btn { width: 100%; max-width: 300px; }
   .landing-hero-trust { gap: .75rem; font-size: .72rem; }
-  .tool-groups { gap: 2rem; }
 }
 @media (max-width: 480px) {
   .landing-h1 { font-size: 1.8rem; }
   .landing-hero-btns { flex-direction: column; align-items: center; }
   .landing-hero-btns .btn, .landing-btn-ghost { width: 100%; max-width: 300px; }
-  .tool-group-grid { grid-template-columns: 1fr; }
+  .featured-tools-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Chart container ── */
