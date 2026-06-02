@@ -65,30 +65,6 @@ export default function Landing({ onNavigate }) {
         </div>
       </section>
 
-      {/* ── Personal Story ─────────────────────────────────── */}
-      <section className="landing-section landing-story-section">
-        <div className="landing-inner landing-about-inner">
-          <h2 className="landing-h2">{t('landing.aboutTitle')}</h2>
-          <blockquote className="landing-quote">
-            <p>{t('landing.aboutQuote')}</p>
-          </blockquote>
-          <p className="landing-about-body">{t('landing.aboutBody1')}</p>
-          <p className="landing-about-body">{t('landing.aboutBody2')}</p>
-          <div className="landing-stats">
-            {[
-              { num: '14',   label: t('landing.statTools') },
-              { num: '100%', label: t('landing.statFree')  },
-              { num: '0',    label: t('landing.statAds')   },
-            ].map((s, i) => (
-              <div key={i} className="landing-stat">
-                <div className="landing-stat-num">{s.num}</div>
-                <div className="landing-stat-lbl">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Calculator Grid ─────────────────────────────────── */}
       <section className="landing-section landing-tools-section">
         <div className="landing-inner">
@@ -137,25 +113,26 @@ export default function Landing({ onNavigate }) {
         </div>
       </section>
 
-      {/* ── CTA Banner ─────────────────────────────────────── */}
-      <section className="landing-cta-section">
-        <div className="landing-inner landing-cta-inner">
-          <h2 className="landing-h2" style={{ color:'#fff', marginBottom:'.75rem' }}>
-            {t('landing.ctaTitle')}
-          </h2>
-          <p style={{ color:'rgba(255,255,255,.8)', fontSize:'1.05rem', marginBottom:'2rem', maxWidth:520, margin:'0 auto 2rem' }}>
-            {t('landing.ctaSub')}
-          </p>
-          <div className="landing-cta-btns">
-            <button className="btn btn-primary landing-btn-lg" onClick={() => onNavigate('car')}>
-              🚗 {t('nav.car')}
-            </button>
-            <button className="btn btn-primary landing-btn-lg" onClick={() => onNavigate('budget')} style={{ background:'var(--success)', borderColor:'var(--success)' }}>
-              📝 {t('nav.budget')}
-            </button>
-            <button className="btn btn-primary landing-btn-lg" onClick={() => onNavigate('personalLoan')} style={{ background:'#d97706', borderColor:'#d97706' }}>
-              📋 {t('nav.personalLoan')}
-            </button>
+      {/* ── Personal Story ─────────────────────────────────── */}
+      <section className="landing-section landing-story-section">
+        <div className="landing-inner landing-about-inner">
+          <h2 className="landing-h2">{t('landing.aboutTitle')}</h2>
+          <blockquote className="landing-quote">
+            <p>{t('landing.aboutQuote')}</p>
+          </blockquote>
+          <p className="landing-about-body">{t('landing.aboutBody1')}</p>
+          <p className="landing-about-body">{t('landing.aboutBody2')}</p>
+          <div className="landing-stats">
+            {[
+              { num: '14',   label: t('landing.statTools') },
+              { num: '100%', label: t('landing.statFree')  },
+              { num: '0',    label: t('landing.statAds')   },
+            ].map((s, i) => (
+              <div key={i} className="landing-stat">
+                <div className="landing-stat-num">{s.num}</div>
+                <div className="landing-stat-lbl">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
