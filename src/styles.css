@@ -543,57 +543,80 @@ tbody td:first-child { text-align: left; font-weight: 500; }
 .landing-story-section { background: var(--white); }
 
 /* Tool groups */
-.tool-groups { display: flex; flex-direction: column; gap: 1.25rem; }
-.tool-group-block {
-  border-left: 4px solid;
-  border-radius: 10px;
-  padding: 1.4rem 1.5rem 1.5rem;
+.tool-groups { display: flex; flex-direction: column; gap: 2.5rem; }
+
+.tool-group-block { /* no background, no border */ }
+
+.tool-group-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: .65rem;
+  border-bottom: 1.5px solid #e2e8f0;
 }
-.tool-group-header { margin-bottom: 1rem; }
 .tool-group-label {
-  display: inline-block;
-  font-size: .68rem;
+  font-size: .72rem;
   font-weight: 800;
   letter-spacing: .1em;
   text-transform: uppercase;
-  padding: .28rem .8rem;
-  border-radius: 99px;
+  color: var(--muted);
 }
 
-/* Tool group grids — center groups with < 3 cards */
+/* Always 3-column grid; fewer cards left-align naturally */
 .tool-group-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
+  align-items: stretch;
 }
-.tool-group-count-3 .landing-tool-card { flex: 1 1 200px; }
-.tool-group-count-2 { justify-content: center; }
-.tool-group-count-2 .landing-tool-card { flex: 0 1 340px; }
-.tool-group-count-1 { justify-content: center; }
-.tool-group-count-1 .landing-tool-card { flex: 0 1 340px; }
 
-/* Tool cards */
+/* Tool cards — equal height, structured layout */
 .landing-tool-card {
   background: var(--white);
-  border: 1.5px solid rgba(0,0,0,.08);
-  border-radius: var(--radius);
-  padding: 1.4rem 1.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.5rem 1.25rem 1.25rem;
   text-align: left;
   cursor: pointer;
-  transition: transform .18s, box-shadow .18s, border-color .18s;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
   display: flex;
   flex-direction: column;
-  gap: .4rem;
+  gap: 0;
+  height: 100%;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
 .landing-tool-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(10,35,66,.12);
-  border-color: var(--card-accent, var(--accent));
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(10,35,66,.1), 0 2px 6px rgba(10,35,66,.06);
+  border-color: #cbd5e1;
 }
-.landing-tool-icon { font-size: 2rem; line-height: 1; margin-bottom: .3rem; }
-.landing-tool-name { font-size: .92rem; font-weight: 700; color: var(--navy); line-height: 1.3; }
-.landing-tool-desc { font-size: .8rem; color: var(--muted); line-height: 1.5; flex: 1; }
-.landing-tool-cta { font-size: .78rem; font-weight: 700; color: var(--card-accent, var(--accent)); margin-top: .3rem; }
+.landing-tool-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  margin-bottom: .85rem;
+  display: block;
+}
+.landing-tool-name {
+  font-size: .93rem;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.3;
+  margin-bottom: .45rem;
+}
+.landing-tool-desc {
+  font-size: .8rem;
+  color: var(--muted);
+  line-height: 1.6;
+  flex: 1;
+  margin-bottom: 1rem;
+}
+.landing-tool-cta {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: auto;
+}
 
 /* Cards feature section */
 .landing-cards-section {
@@ -652,25 +675,21 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   .landing-hero-sub { font-size: .95rem; }
   .landing-section { padding: 3rem 1.25rem; }
   .landing-h2 { font-size: 1.55rem; }
-  .landing-tool-card { padding: 1.1rem 1rem; }
-  .landing-tool-icon { font-size: 1.6rem; }
+  .tool-group-grid { grid-template-columns: repeat(2, 1fr); }
+  .landing-tool-card { padding: 1.1rem 1rem 1rem; }
+  .landing-tool-icon { font-size: 1.5rem; margin-bottom: .65rem; }
   .landing-stats { gap: 1.25rem; }
   .landing-stat-num { font-size: 2rem; }
   .landing-cta-btns { flex-direction: column; align-items: center; }
   .landing-cta-btns .btn { width: 100%; max-width: 300px; }
-  .tool-group-block { padding: 1rem 1rem 1.1rem; }
-  .tool-group-count-2 .landing-tool-card,
-  .tool-group-count-1 .landing-tool-card { flex: 1 1 200px; }
   .landing-hero-trust { gap: .75rem; font-size: .72rem; }
+  .tool-groups { gap: 2rem; }
 }
 @media (max-width: 480px) {
   .landing-h1 { font-size: 1.8rem; }
   .landing-hero-btns { flex-direction: column; align-items: center; }
   .landing-hero-btns .btn, .landing-btn-ghost { width: 100%; max-width: 300px; }
-  .tool-group-grid { flex-direction: column; }
-  .tool-group-count-3 .landing-tool-card,
-  .tool-group-count-2 .landing-tool-card,
-  .tool-group-count-1 .landing-tool-card { flex: 1 1 auto; }
+  .tool-group-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Chart container ── */

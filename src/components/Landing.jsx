@@ -5,10 +5,6 @@ const TOOL_GROUPS = [
   {
     id: 'loans',
     labelKey: 'landing.catLoans',
-    accent: '#2563eb',
-    bg: '#eff6ff',
-    badge: '#dbeafe',
-    badgeText: '#1e40af',
     tools: [
       { id: 'car',          icon: '🚗', navKey: 'nav.car',          descKey: 'landing.descCar' },
       { id: 'home',         icon: '🏠', navKey: 'nav.home',         descKey: 'landing.descHome' },
@@ -18,10 +14,6 @@ const TOOL_GROUPS = [
   {
     id: 'income',
     labelKey: 'landing.catIncome',
-    accent: '#16a34a',
-    bg: '#f0fdf4',
-    badge: '#dcfce7',
-    badgeText: '#166534',
     tools: [
       { id: 'tax',      icon: '💼', navKey: 'nav.tax',      descKey: 'landing.descTax' },
       { id: 'military', icon: '🎖', navKey: 'nav.military', descKey: 'landing.descMilitary' },
@@ -30,10 +22,6 @@ const TOOL_GROUPS = [
   {
     id: 'planning',
     labelKey: 'landing.catPlanning',
-    accent: '#d97706',
-    bg: '#fffbeb',
-    badge: '#fef3c7',
-    badgeText: '#92400e',
     tools: [
       { id: 'budget', icon: '📝', navKey: 'nav.budget', descKey: 'landing.descBudget' },
       { id: 'cc',     icon: '💳', navKey: 'nav.cc',     descKey: 'landing.descCc' },
@@ -42,10 +30,6 @@ const TOOL_GROUPS = [
   {
     id: 'investments',
     labelKey: 'landing.catInvestments',
-    accent: '#7c3aed',
-    bg: '#faf5ff',
-    badge: '#ede9fe',
-    badgeText: '#4c1d95',
     tools: [
       { id: 'retirement', icon: '🏦', navKey: 'nav.retirement', descKey: 'landing.descRetirement' },
     ],
@@ -53,10 +37,6 @@ const TOOL_GROUPS = [
   {
     id: 'cards',
     labelKey: 'landing.catCards',
-    accent: '#dc2626',
-    bg: '#fff7ed',
-    badge: '#ffedd5',
-    badgeText: '#9a3412',
     tools: [
       { id: 'amex', icon: '⭐', navKey: 'nav.amex', descKey: 'landing.descAmex' },
     ],
@@ -132,28 +112,16 @@ export default function Landing({ onNavigate }) {
 
           <div className="tool-groups">
             {TOOL_GROUPS.map(group => (
-              <div
-                key={group.id}
-                className="tool-group-block"
-                style={{ background: group.bg, borderLeftColor: group.accent }}
-              >
+              <div key={group.id} className="tool-group-block">
                 <div className="tool-group-header">
-                  <span
-                    className="tool-group-label"
-                    style={{ background: group.badge, color: group.badgeText }}
-                  >
-                    {t(group.labelKey)}
-                  </span>
+                  <span className="tool-group-label">{t(group.labelKey)}</span>
                 </div>
-                <div
-                  className={`tool-group-grid tool-group-count-${group.tools.length}`}
-                >
+                <div className="tool-group-grid">
                   {group.tools.map(tool => (
                     <button
                       key={tool.id}
                       className="landing-tool-card"
                       onClick={() => onNavigate(tool.id)}
-                      style={{ '--card-accent': group.accent }}
                     >
                       <span className="landing-tool-icon">{tool.icon}</span>
                       <h3 className="landing-tool-name">{t(tool.navKey)}</h3>
