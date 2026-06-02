@@ -6,9 +6,7 @@ import { useLocalState } from '../utils/useLocalState';
 
 const CARD_COLORS = ['#c0392b','#1e8449','#1a5276','#8e44ad','#e67e22','#16a085','#d4ac0d'];
 
-const DEFAULT_CARDS = [
-  { id: 1, name: 'Card 1', balance: 8500, apr: 22.99, payment: 300 },
-];
+const DEFAULT_CARDS = [];
 
 function buildTimeline(balance, apr, payment) {
   if (!payment || payment <= balance * (apr / 100 / 12)) return [];
@@ -27,13 +25,13 @@ function buildTimeline(balance, apr, payment) {
 export default function CreditCard() {
   const t = useT();
   const [cards,       setCards]      = useLocalState('cc-cards',   DEFAULT_CARDS);
-  const [nextId,      setNextId]     = useLocalState('cc-nextid',  2);
-  const [extraBudget, setExtraBudget] = useLocalState('cc-extra',  100);
+  const [nextId,      setNextId]     = useLocalState('cc-nextid',  1);
+  const [extraBudget, setExtraBudget] = useLocalState('cc-extra',  0);
   const [newCardName, setNewCardName] = useState('');
 
   function addCard() {
-    const name = newCardName.trim() || `Card ${nextId}`;
-    setCards(prev => [...prev, { id: nextId, name, balance: 0, apr: 20, payment: 100 }]);
+    if (!newCardName.trim()) return;
+    setCards(prev => [...prev, { id: nextId, name: newCardName.trim(), balance: 0, apr: 0, payment: 0 }]);
     setNextId(n => n + 1);
     setNewCardName('');
   }

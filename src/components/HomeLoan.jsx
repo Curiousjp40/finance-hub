@@ -21,12 +21,12 @@ function calcExtraPayoff(principal, annualRate, basePayment, extra) {
 
 export default function HomeLoan() {
   const t = useT();
-  const [price,     setPrice]     = useLocalState('hl-price',     400000);
-  const [down,      setDown]      = useLocalState('hl-down',      80000);
-  const [rate,      setRate]      = useLocalState('hl-rate',      6.8);
+  const [price,     setPrice]     = useLocalState('hl-price',     0);
+  const [down,      setDown]      = useLocalState('hl-down',      0);
+  const [rate,      setRate]      = useLocalState('hl-rate',      0);
   const [term,      setTerm]      = useLocalState('hl-term',      360);
-  const [tax,       setTax]       = useLocalState('hl-tax',       350);
-  const [insurance, setInsurance] = useLocalState('hl-insurance', 150);
+  const [tax,       setTax]       = useLocalState('hl-tax',       0);
+  const [insurance, setInsurance] = useLocalState('hl-insurance', 0);
   const [hoa,       setHoa]       = useLocalState('hl-hoa',       0);
   const [pmi,       setPmi]       = useLocalState('hl-pmi',       0);
   const [extra,     setExtra]     = useLocalState('hl-extra',     0);

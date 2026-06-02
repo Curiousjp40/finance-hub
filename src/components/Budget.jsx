@@ -157,7 +157,7 @@ export default function Budget() {
   const lang = useLang();
 
   // ── Persistent state ─────────────────────────────────────────
-  const [income, setIncome]           = useLocalState('budget-income',       5000);
+  const [income, setIncome]           = useLocalState('budget-income',       0);
   const [catLimits, setCatLimits]     = useLocalState('budget-cat-limits',   {});
   const [expenses, setExpenses]       = useLocalState('budget-expenses',     []);
   const [customCats, setCustomCats]   = useLocalState('budget-custom-cats2', []);

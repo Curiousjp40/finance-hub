@@ -73,7 +73,7 @@ export default function CarLoan() {
     if (!newName.trim()) return;
     const id = nextId;
     setVehicles(prev => [...prev, {
-      id, name: newName.trim(), price: 25000, down: 3000, tradeIn: 0, rate: 6.5, term: 60, extra: 0,
+      id, name: newName.trim(), price: 0, down: 0, tradeIn: 0, rate: 0, term: 60, extra: 0,
       isNew: true, make: '', model: '', trim: '', year: CURRENT_YEAR, mileage: 0, condition: 'excellent', actualInsurance: 0,
     }]);
     setNextId(n => n + 1);

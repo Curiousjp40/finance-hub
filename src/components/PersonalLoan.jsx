@@ -72,8 +72,8 @@ const RED_FLAGS = [
 export default function PersonalLoan() {
   const t = useT();
 
-  const [amount, setAmount] = useLocalState('pl-amount', 10000);
-  const [rate,   setRate]   = useLocalState('pl-rate',   15);
+  const [amount, setAmount] = useLocalState('pl-amount', 0);
+  const [rate,   setRate]   = useLocalState('pl-rate',   0);
   const [term,   setTerm]   = useLocalState('pl-term',   36);
 
   /* ── main calc ── */

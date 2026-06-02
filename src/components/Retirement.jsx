@@ -41,10 +41,7 @@ function realValue(futureValue, inflationRate, years) {
 
 const ACCOUNT_COLORS = ['#1a5276','#27ae60','#d4ac0d','#8e44ad','#e67e22','#c0392b','#16a085'];
 
-const DEFAULT_ACCOUNTS = [
-  { id: 1, name: 'TSP',      balance: 15000, monthlyContrib: 300, annualReturn: 7, stopAge: 65 },
-  { id: 2, name: 'Roth IRA', balance: 10000, monthlyContrib: 200, annualReturn: 7, stopAge: 65 },
-];
+const DEFAULT_ACCOUNTS = [];
 
 const CustomTooltip = ({ active, payload, label, t }) => {
   if (!active || !payload?.length) return null;
@@ -64,19 +61,13 @@ export default function Retirement() {
   const t = useT();
   const [newAccountName, setNewAccountName] = useState('');
 
-  const [currentAge,    setCurrentAge]    = useLocalState('ret-age',      32);
-  const [retirementAge, setRetirementAge] = useLocalState('ret-retage',   65);
-  const [inflationRate, setInflationRate] = useLocalState('ret-inflation', 3);
-  const [desiredIncome, setDesiredIncome] = useLocalState('ret-income',   60000);
+  const [currentAge,    setCurrentAge]    = useLocalState('ret-age',      0);
+  const [retirementAge, setRetirementAge] = useLocalState('ret-retage',   0);
+  const [inflationRate, setInflationRate] = useLocalState('ret-inflation', 0);
+  const [desiredIncome, setDesiredIncome] = useLocalState('ret-income',   0);
   const [ssMonthly,     setSsMonthly]     = useLocalState('ret-ss',       0);
   const [accounts,      setAccounts]      = useLocalState('ret-accounts', DEFAULT_ACCOUNTS);
-  const [nextId,        setNextId]        = useLocalState('ret-nextid', () => {
-    try {
-      const stored = localStorage.getItem('ret-accounts');
-      if (stored) return Math.max(...JSON.parse(stored).map(a => a.id), 0) + 1;
-    } catch {}
-    return 3;
-  });
+  const [nextId,        setNextId]        = useLocalState('ret-nextid', 1);
 
   const yearsToRetire   = Math.max(0, retirementAge - currentAge);
   const retirementYears = 25;
@@ -147,8 +138,8 @@ export default function Retirement() {
     : [null, null, null];
 
   function addAccount() {
-    const name = newAccountName.trim() || `Account ${nextId}`;
-    setAccounts(prev => [...prev, { id: nextId, name, balance: 0, monthlyContrib: 0, annualReturn: 7, stopAge: retirementAge }]);
+    if (!newAccountName.trim()) return;
+    setAccounts(prev => [...prev, { id: nextId, name: newAccountName.trim(), balance: 0, monthlyContrib: 0, annualReturn: 0, stopAge: retirementAge }]);
     setNextId(n => n + 1);
     setNewAccountName('');
   }

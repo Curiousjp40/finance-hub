@@ -85,31 +85,31 @@ export default function NetIncome() {
   const [milMode, setMilMode] = useLocalState('ni-milmode', false);
 
   // ── Civilian state ───────────────────────────────────────────
-  const [gross,   setGross]   = useLocalState('ni-gross',   75000);
+  const [gross,   setGross]   = useLocalState('ni-gross',   0);
   const [filing,  setFiling]  = useLocalState('ni-filing',  'single');
   const [state,   setState]   = useLocalState('ni-state',   'TX');
-  const [k401,    setK401]    = useLocalState('ni-k401',    6);
+  const [k401,    setK401]    = useLocalState('ni-k401',    0);
   const [hsa,     setHsa]     = useLocalState('ni-hsa',     0);
   const [other,   setOther]   = useLocalState('ni-other',   0);
   const [dualOn,  setDualOn]  = useLocalState('ni-dual',    false);
-  const [gross2,  setGross2]  = useLocalState('ni-gross2',  65000);
+  const [gross2,  setGross2]  = useLocalState('ni-gross2',  0);
   const [filing2, setFiling2] = useLocalState('ni-filing2', 'single');
   const [state2,  setState2]  = useLocalState('ni-state2',  'TX');
-  const [k401b,   setK401b]   = useLocalState('ni-k401b',   6);
+  const [k401b,   setK401b]   = useLocalState('ni-k401b',   0);
   const [hsa2,    setHsa2]    = useLocalState('ni-hsa2',    0);
   const [other2,  setOther2]  = useLocalState('ni-other2',  0);
 
   // ── Military state ───────────────────────────────────────────
   const [milGrade,    setMilGrade]    = useLocalState('ni-mil-grade',    'E-5');
-  const [milYos,      setMilYos]      = useLocalState('ni-mil-yos',      4);
+  const [milYos,      setMilYos]      = useLocalState('ni-mil-yos',      0);
   const [milFiling,   setMilFiling]   = useLocalState('ni-mil-filing',   'single');
   const [milState,    setMilState]    = useLocalState('ni-mil-state',    'TX');
   const [milBahTier,  setMilBahTier]  = useLocalState('ni-mil-bahtier',  'mid');
   const [milWithDep,  setMilWithDep]  = useLocalState('ni-mil-withdep',  true);
   const [milService,  setMilService]  = useLocalState('ni-mil-service',  'active');
-  const [milTspPct,   setMilTspPct]   = useLocalState('ni-mil-tsp',      5);
-  const [milDrillPer, setMilDrillPer] = useLocalState('ni-mil-drillper', 4);
-  const [milATDays,   setMilATDays]   = useLocalState('ni-mil-atdays',   15);
+  const [milTspPct,   setMilTspPct]   = useLocalState('ni-mil-tsp',      0);
+  const [milDrillPer, setMilDrillPer] = useLocalState('ni-mil-drillper', 0);
+  const [milATDays,   setMilATDays]   = useLocalState('ni-mil-atdays',   0);
 
   // ── Civilian calculations ────────────────────────────────────
   const e1 = useMemo(() => calcEarner(gross, filing, state, k401, hsa, other),
