@@ -8,15 +8,16 @@ import { useT } from '../LanguageContext';
 import { useLocalState } from '../utils/useLocalState';
 
 /* ── helpers ────────────────────────────────────────────────── */
-function projectSavings(currentAge, retirementAge, currentBalance, monthlyContrib, annualReturn, stopAge) {
-  const months     = (retirementAge - currentAge) * 12;
-  const stopMonths = Math.max(0, (stopAge - currentAge) * 12);
-  const r          = annualReturn / 100 / 12;
-  const rows       = [];
-  let balance      = currentBalance;
-  let totalContrib = currentBalance;
+function projectSavings(currentAge, retirementAge, currentBalance, monthlyContrib, annualReturn, startAge, stopAge) {
+  const months      = (retirementAge - currentAge) * 12;
+  const startMonths = Math.max(0, (startAge - currentAge) * 12);
+  const stopMonths  = Math.max(0, (stopAge  - currentAge) * 12);
+  const r           = annualReturn / 100 / 12;
+  const rows        = [];
+  let balance       = currentBalance;
+  let totalContrib  = currentBalance;
   for (let m = 1; m <= months; m++) {
-    const contrib = m <= stopMonths ? monthlyContrib : 0;
+    const contrib = m > startMonths && m <= stopMonths ? monthlyContrib : 0;
     balance       = balance * (1 + r) + contrib;
     totalContrib  += contrib;
     if (m % 12 === 0) {
@@ -120,7 +121,8 @@ export default function Retirement() {
       ...projectSavings(
         currentAge, retirementAge,
         acc.balance, acc.monthlyContrib, acc.annualReturn,
-        acc.stopAge ?? retirementAge
+        acc.startAge ?? currentAge,
+        acc.stopAge  ?? retirementAge
       ),
     })),
     [accounts, currentAge, retirementAge]
@@ -189,7 +191,7 @@ export default function Retirement() {
   /* ── account handlers ───────────────────────────────────────── */
   function addAccount() {
     if (!newAccountName.trim()) return;
-    setAccounts(prev => [...prev, { id: nextId, name: newAccountName.trim(), balance: 0, monthlyContrib: 0, annualReturn: 0, stopAge: retirementAge }]);
+    setAccounts(prev => [...prev, { id: nextId, name: newAccountName.trim(), balance: 0, monthlyContrib: 0, annualReturn: 0, startAge: currentAge, stopAge: retirementAge }]);
     setNextId(n => n + 1);
     setNewAccountName('');
   }
@@ -322,19 +324,34 @@ export default function Retirement() {
                     onChange={e => updateAccount(ap.id, 'annualReturn', +e.target.value)} />
                   <div className="range-labels"><span>1%</span><span>15%</span></div>
                 </div>
-                <div className="field" style={{ marginBottom:'.8rem' }}>
-                  <label style={{ fontSize:'.78rem' }}>
-                    {t('retirement.stopAge')}
-                    <span style={{ fontWeight:400, color:'var(--muted)', marginLeft:'.4rem' }}>({t('retirement.stopAgeHint')})</span>
-                  </label>
-                  <input type="number" value={ap.stopAge ?? retirementAge} min={currentAge} max={retirementAge}
-                    onChange={e => updateAccount(ap.id, 'stopAge', e.target.value === '' ? retirementAge : Math.min(retirementAge, +e.target.value))} />
+                <div className="two-col" style={{ gap:'.5rem', marginBottom:'.8rem' }}>
+                  <div className="field" style={{ marginBottom:0 }}>
+                    <label style={{ fontSize:'.78rem' }}>
+                      {t('retirement.startAge')}
+                      <span style={{ fontWeight:400, color:'var(--muted)', marginLeft:'.4rem' }}>({t('retirement.startAgeHint')})</span>
+                    </label>
+                    <input type="number" value={ap.startAge ?? currentAge} min={currentAge} max={ap.stopAge ?? retirementAge}
+                      onChange={e => updateAccount(ap.id, 'startAge', e.target.value === '' ? currentAge : Math.max(currentAge, +e.target.value))} />
+                  </div>
+                  <div className="field" style={{ marginBottom:0 }}>
+                    <label style={{ fontSize:'.78rem' }}>
+                      {t('retirement.stopAge')}
+                      <span style={{ fontWeight:400, color:'var(--muted)', marginLeft:'.4rem' }}>({t('retirement.stopAgeHint')})</span>
+                    </label>
+                    <input type="number" value={ap.stopAge ?? retirementAge} min={ap.startAge ?? currentAge} max={retirementAge}
+                      onChange={e => updateAccount(ap.id, 'stopAge', e.target.value === '' ? retirementAge : Math.min(retirementAge, +e.target.value))} />
+                  </div>
                 </div>
                 <div style={{ background:`${color}18`, borderRadius:8, padding:'.6rem .75rem', borderLeft:`3px solid ${color}` }}>
                   <div style={{ fontSize:'.72rem', color:'var(--muted)', fontWeight:600, textTransform:'uppercase', letterSpacing:'.04em' }}>
                     {t('retirement.projectedAt').replace('{age}', retirementAge)}
                   </div>
                   <div style={{ fontSize:'1.25rem', fontWeight:800, color, marginTop:'.15rem' }}>{fmtUSD(ap.finalBalance)}</div>
+                  {(ap.startAge ?? currentAge) > currentAge && (
+                    <div style={{ fontSize:'.72rem', color:'var(--muted)', marginTop:'.15rem' }}>
+                      {t('retirement.contribsStartAt').replace('{age}', ap.startAge)}
+                    </div>
+                  )}
                   {(ap.stopAge ?? retirementAge) < retirementAge && (
                     <div style={{ fontSize:'.72rem', color:'var(--muted)', marginTop:'.15rem' }}>
                       {t('retirement.contribsStopAt').replace('{age}', ap.stopAge)}
