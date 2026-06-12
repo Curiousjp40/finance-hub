@@ -9,24 +9,25 @@ import { useLocalState } from '../utils/useLocalState';
 
 /* ── helpers ────────────────────────────────────────────────── */
 function projectSavings(currentAge, retirementAge, currentBalance, monthlyContrib, annualReturn, startAge, stopAge) {
-  const months      = (retirementAge - currentAge) * 12;
-  const startMonths = Math.max(0, Math.round((startAge - currentAge) * 12));
-  const stopMonths  = Math.max(0, Math.round((stopAge  - currentAge) * 12));
-  const r           = annualReturn / 100 / 12;
-  const rows        = [];
-  // If startAge > currentAge, the account doesn't exist yet — no balance, no growth until startAge.
-  let balance      = startMonths === 0 ? currentBalance : 0;
-  let totalContrib = startMonths === 0 ? currentBalance : 0;
+  // Clamp here so inputs can be typed freely without intermediate-value snapping
+  const effStart = Math.max(currentAge, Math.min(retirementAge, startAge || currentAge));
+  const effStop  = Math.max(effStart,   Math.min(retirementAge, stopAge  || retirementAge));
+  const months      = Math.max(0, Math.round((retirementAge - currentAge) * 12));
+  const startMonths = Math.max(0, Math.round((effStart      - currentAge) * 12));
+  const stopMonths  = Math.max(0, Math.round((effStop       - currentAge) * 12));
+  const r    = (annualReturn || 0) / 100 / 12;
+  const rows = [];
+  let balance      = startMonths === 0 ? (currentBalance || 0) : 0;
+  let totalContrib = startMonths === 0 ? (currentBalance || 0) : 0;
   for (let m = 1; m <= months; m++) {
-    // Inject the opening balance in the month the account starts
     if (startMonths > 0 && m === startMonths) {
-      balance      += currentBalance;
-      totalContrib += currentBalance;
+      balance      += (currentBalance || 0);
+      totalContrib += (currentBalance || 0);
     }
     if (m >= startMonths) {
       const contributing = m > startMonths && m <= stopMonths;
-      balance      = balance * (1 + r) + (contributing ? monthlyContrib : 0);
-      totalContrib += contributing ? monthlyContrib : 0;
+      balance      = balance * (1 + r) + (contributing ? (monthlyContrib || 0) : 0);
+      totalContrib += contributing ? (monthlyContrib || 0) : 0;
     }
     if (m % 12 === 0) {
       rows.push({
@@ -241,12 +242,12 @@ export default function Retirement() {
         <div className="two-col">
           <div className="field">
             <label>{t('retirement.currentAge')}</label>
-            <input type="number" value={currentAge || ''} min={16} max={80}
+            <input type="number" value={currentAge || ''}
               onChange={e => setCurrentAge(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
           <div className="field">
             <label>{t('retirement.retirementAge')}</label>
-            <input type="number" value={retirementAge || ''} min={currentAge + 1} max={90}
+            <input type="number" value={retirementAge || ''}
               onChange={e => setRetirementAge(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
           <div className="field">
@@ -256,7 +257,7 @@ export default function Retirement() {
                 {t('retirement.desiredIncomeSub')}
               </span>
             </label>
-            <input type="number" value={desiredIncome || ''} min={0} step={5000}
+            <input type="number" value={desiredIncome || ''}
               onChange={e => setDesiredIncome(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
           <div className="field">
@@ -322,12 +323,12 @@ export default function Retirement() {
                       ? t('retirement.accountBalanceFuture').replace('{age}', ap.startAge ?? currentAge)
                       : t('retirement.accountBalance')}
                   </label>
-                  <input type="number" value={ap.balance || ''} min={0} step={500}
+                  <input type="number" value={ap.balance || ''}
                     onChange={e => updateAccount(ap.id, 'balance', e.target.value === '' ? 0 : +e.target.value)} />
                 </div>
                 <div className="field" style={{ marginBottom:'.55rem' }}>
                   <label style={{ fontSize:'.78rem' }}>{t('retirement.accountContrib')}</label>
-                  <input type="number" value={ap.monthlyContrib || ''} min={0} step={50}
+                  <input type="number" value={ap.monthlyContrib || ''}
                     onChange={e => updateAccount(ap.id, 'monthlyContrib', e.target.value === '' ? 0 : +e.target.value)} />
                 </div>
                 <div className="field" style={{ marginBottom:'.55rem' }}>
@@ -342,16 +343,16 @@ export default function Retirement() {
                       {t('retirement.startAge')}
                       <span style={{ fontWeight:400, color:'var(--muted)', marginLeft:'.4rem' }}>({t('retirement.startAgeHint')})</span>
                     </label>
-                    <input type="number" value={ap.startAge ?? currentAge} min={currentAge} max={ap.stopAge ?? retirementAge}
-                      onChange={e => updateAccount(ap.id, 'startAge', e.target.value === '' ? currentAge : Math.max(currentAge, +e.target.value))} />
+                    <input type="number" value={ap.startAge ?? currentAge}
+                      onChange={e => updateAccount(ap.id, 'startAge', e.target.value === '' ? currentAge : +e.target.value)} />
                   </div>
                   <div className="field" style={{ marginBottom:0 }}>
                     <label style={{ fontSize:'.78rem' }}>
                       {t('retirement.stopAge')}
                       <span style={{ fontWeight:400, color:'var(--muted)', marginLeft:'.4rem' }}>({t('retirement.stopAgeHint')})</span>
                     </label>
-                    <input type="number" value={ap.stopAge ?? retirementAge} min={ap.startAge ?? currentAge} max={retirementAge}
-                      onChange={e => updateAccount(ap.id, 'stopAge', e.target.value === '' ? retirementAge : Math.min(retirementAge, +e.target.value))} />
+                    <input type="number" value={ap.stopAge ?? retirementAge}
+                      onChange={e => updateAccount(ap.id, 'stopAge', e.target.value === '' ? retirementAge : +e.target.value)} />
                   </div>
                 </div>
                 <div style={{ background:`${color}18`, borderRadius:8, padding:'.6rem .75rem', borderLeft:`3px solid ${color}` }}>
@@ -388,7 +389,7 @@ export default function Retirement() {
               {t('retirement.ssFRALabel')}
               <span style={{ fontWeight:400, color:'var(--muted)', marginLeft:'.4rem', fontSize:'.78rem' }}>({t('retirement.ssFRASub')})</span>
             </label>
-            <input type="number" value={ssFRA || ''} min={0} step={50}
+            <input type="number" value={ssFRA || ''}
               onChange={e => setSsFRA(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
           <div className="field">
@@ -464,13 +465,13 @@ export default function Retirement() {
                 </div>
                 <div className="field" style={{ marginBottom:'.55rem' }}>
                   <label style={{ fontSize:'.78rem' }}>{t('retirement.pensionMonthly')}</label>
-                  <input type="number" value={p.monthlyAmount || ''} min={0} step={100}
+                  <input type="number" value={p.monthlyAmount || ''}
                     onChange={e => updatePension(p.id, 'monthlyAmount', e.target.value === '' ? 0 : +e.target.value)} />
                 </div>
                 <div className="two-col" style={{ gap:'.5rem' }}>
                   <div className="field" style={{ marginBottom:'.55rem' }}>
                     <label style={{ fontSize:'.78rem' }}>{t('retirement.pensionStartAge')}</label>
-                    <input type="number" value={p.startAge || ''} min={40} max={80}
+                    <input type="number" value={p.startAge || ''}
                       onChange={e => updatePension(p.id, 'startAge', e.target.value === '' ? 65 : +e.target.value)} />
                   </div>
                   <div className="field" style={{ marginBottom:'.55rem' }}>
@@ -532,22 +533,22 @@ export default function Retirement() {
         <div className="two-col">
           <div className="field">
             <label>{t('retirement.rentalIncome')}</label>
-            <input type="number" value={rentalMonthly || ''} min={0} step={100}
+            <input type="number" value={rentalMonthly || ''}
               onChange={e => setRentalMonthly(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
           <div className="field">
             <label>{t('retirement.partTimeIncome')}</label>
-            <input type="number" value={partTimeMonthly || ''} min={0} step={100}
+            <input type="number" value={partTimeMonthly || ''}
               onChange={e => setPartTimeMonthly(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
           <div className="field">
             <label>{t('retirement.annuityIncome')}</label>
-            <input type="number" value={annuityMonthly || ''} min={0} step={100}
+            <input type="number" value={annuityMonthly || ''}
               onChange={e => setAnnuityMonthly(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
           <div className="field">
             <label>{t('retirement.otherIncome')}</label>
-            <input type="number" value={otherMonthlyAmt || ''} min={0} step={100}
+            <input type="number" value={otherMonthlyAmt || ''}
               onChange={e => setOtherMonthlyAmt(e.target.value === '' ? 0 : +e.target.value)} />
           </div>
         </div>
