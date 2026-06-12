@@ -10,16 +10,24 @@ import { useLocalState } from '../utils/useLocalState';
 /* ── helpers ────────────────────────────────────────────────── */
 function projectSavings(currentAge, retirementAge, currentBalance, monthlyContrib, annualReturn, startAge, stopAge) {
   const months      = (retirementAge - currentAge) * 12;
-  const startMonths = Math.max(0, (startAge - currentAge) * 12);
-  const stopMonths  = Math.max(0, (stopAge  - currentAge) * 12);
+  const startMonths = Math.max(0, Math.round((startAge - currentAge) * 12));
+  const stopMonths  = Math.max(0, Math.round((stopAge  - currentAge) * 12));
   const r           = annualReturn / 100 / 12;
   const rows        = [];
-  let balance       = currentBalance;
-  let totalContrib  = currentBalance;
+  // If startAge > currentAge, the account doesn't exist yet — no balance, no growth until startAge.
+  let balance      = startMonths === 0 ? currentBalance : 0;
+  let totalContrib = startMonths === 0 ? currentBalance : 0;
   for (let m = 1; m <= months; m++) {
-    const contrib = m > startMonths && m <= stopMonths ? monthlyContrib : 0;
-    balance       = balance * (1 + r) + contrib;
-    totalContrib  += contrib;
+    // Inject the opening balance in the month the account starts
+    if (startMonths > 0 && m === startMonths) {
+      balance      += currentBalance;
+      totalContrib += currentBalance;
+    }
+    if (m >= startMonths) {
+      const contributing = m > startMonths && m <= stopMonths;
+      balance      = balance * (1 + r) + (contributing ? monthlyContrib : 0);
+      totalContrib += contributing ? monthlyContrib : 0;
+    }
     if (m % 12 === 0) {
       rows.push({
         age:           +(currentAge + m / 12).toFixed(0),
@@ -309,7 +317,11 @@ export default function Retirement() {
                     title={t('retirement.removeAccount')}>✕</button>
                 </div>
                 <div className="field" style={{ marginBottom:'.55rem' }}>
-                  <label style={{ fontSize:'.78rem' }}>{t('retirement.accountBalance')}</label>
+                  <label style={{ fontSize:'.78rem' }}>
+                    {(ap.startAge ?? currentAge) > currentAge
+                      ? t('retirement.accountBalanceFuture').replace('{age}', ap.startAge ?? currentAge)
+                      : t('retirement.accountBalance')}
+                  </label>
                   <input type="number" value={ap.balance || ''} min={0} step={500}
                     onChange={e => updateAccount(ap.id, 'balance', e.target.value === '' ? 0 : +e.target.value)} />
                 </div>
@@ -349,7 +361,7 @@ export default function Retirement() {
                   <div style={{ fontSize:'1.25rem', fontWeight:800, color, marginTop:'.15rem' }}>{fmtUSD(ap.finalBalance)}</div>
                   {(ap.startAge ?? currentAge) > currentAge && (
                     <div style={{ fontSize:'.72rem', color:'var(--muted)', marginTop:'.15rem' }}>
-                      {t('retirement.contribsStartAt').replace('{age}', ap.startAge)}
+                      {t('retirement.accountOpensAt').replace('{age}', ap.startAge ?? currentAge)}
                     </div>
                   )}
                   {(ap.stopAge ?? retirementAge) < retirementAge && (
