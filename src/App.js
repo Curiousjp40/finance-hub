@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useCallback } from 'react';
 import './styles.css';
 import { LanguageProvider, LanguageContext, useT } from './LanguageContext';
 import Landing               from './components/Landing';
@@ -29,8 +29,24 @@ const NAV_GROUPS = [
 function AppInner() {
   const [tab,      setTab]      = useState('landing');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme,    setTheme]    = useState(() => localStorage.getItem('theme') || 'system');
   const { toggle } = useContext(LanguageContext);
   const t = useT();
+
+  // Apply dark/light/system theme
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark')  root.setAttribute('data-theme', 'dark');
+    else if (theme === 'light') root.setAttribute('data-theme', 'light');
+    else root.removeAttribute('data-theme');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const cycleTheme = useCallback(() => {
+    setTheme(t => t === 'system' ? 'dark' : t === 'dark' ? 'light' : 'system');
+  }, []);
+
+  const themeIcon = theme === 'dark' ? '☀️' : theme === 'light' ? '🌙' : '🌗';
 
   const ALL_TABS = [
     { id: 'car',           label: t('nav.car')           },
@@ -110,6 +126,16 @@ function AppInner() {
             >
               🌐 {t('nav.langBtn')}
             </button>
+
+            {/* Dark mode toggle */}
+            <button
+              className="nav-btn"
+              onClick={cycleTheme}
+              title={`Theme: ${theme}`}
+              style={{ fontWeight:700, fontSize:'.9rem' }}
+            >
+              {themeIcon}
+            </button>
           </nav>
 
           {/* Hamburger */}
@@ -147,13 +173,19 @@ function AppInner() {
           >
             🌐 {t('nav.langBtn')}
           </button>
+          <button
+            className="mobile-nav-btn lang-btn"
+            onClick={() => { cycleTheme(); setMenuOpen(false); }}
+          >
+            {themeIcon} {theme === 'dark' ? 'Light Mode' : theme === 'light' ? 'Auto Mode' : 'Dark Mode'}
+          </button>
         </div>
       </header>
 
       {tab === 'landing' ? (
         <Landing onNavigate={navigate} />
       ) : (
-        <main className="main">
+        <main className="main" key={tab}>
           <h1 className="page-title">{t(`titles.${tab}`)}</h1>
           {tab === 'car'           && <CarLoan />}
           {tab === 'home'          && <><HomeLoan /><CardPromo onNavigate={() => navigate('amex')} /></>}

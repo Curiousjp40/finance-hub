@@ -3,29 +3,29 @@ import { useT } from '../LanguageContext';
 import CardPromo from './CardPromo';
 
 const FEATURED = [
-  { id: 'car',        icon: '🚗', navKey: 'nav.car',        descKey: 'landing.descCar' },
-  { id: 'home',       icon: '🏠', navKey: 'nav.home',       descKey: 'landing.descHome' },
-  { id: 'budget',     icon: '📝', navKey: 'nav.budget',     descKey: 'landing.descBudget' },
-  { id: 'tax',        icon: '💼', navKey: 'nav.tax',        descKey: 'landing.descTax' },
-  { id: 'cc',         icon: '💳', navKey: 'nav.cc',         descKey: 'landing.descCc' },
-  { id: 'retirement', icon: '🏦', navKey: 'nav.retirement', descKey: 'landing.descRetirement' },
+  { id: 'car',        icon: '🚗', navKey: 'nav.car',        descKey: 'landing.descCar',        tag: 'Loans' },
+  { id: 'home',       icon: '🏠', navKey: 'nav.home',       descKey: 'landing.descHome',       tag: 'Loans' },
+  { id: 'budget',     icon: '📝', navKey: 'nav.budget',     descKey: 'landing.descBudget',     tag: 'Planning' },
+  { id: 'tax',        icon: '💼', navKey: 'nav.tax',        descKey: 'landing.descTax',        tag: 'Income' },
+  { id: 'cc',         icon: '💳', navKey: 'nav.cc',         descKey: 'landing.descCc',         tag: 'Cards' },
+  { id: 'retirement', icon: '🏦', navKey: 'nav.retirement', descKey: 'landing.descRetirement', tag: 'Investments' },
 ];
 
 const ALL_TOOLS = [
-  { id: 'car',           icon: '🚗', navKey: 'nav.car',           descKey: 'landing.descCar' },
-  { id: 'home',          icon: '🏠', navKey: 'nav.home',          descKey: 'landing.descHome' },
-  { id: 'personalLoan',  icon: '📋', navKey: 'nav.personalLoan',  descKey: 'landing.descPersonalLoan' },
-  { id: 'tax',           icon: '💼', navKey: 'nav.tax',           descKey: 'landing.descTax' },
-  { id: 'military',      icon: '🎖', navKey: 'nav.military',      descKey: 'landing.descMilitary' },
-  { id: 'budget',        icon: '📝', navKey: 'nav.budget',        descKey: 'landing.descBudget' },
-  { id: 'bills',         icon: '📅', navKey: 'nav.bills',         descKey: 'landing.descBills' },
-  { id: 'debt',          icon: '💳', navKey: 'nav.debt',          descKey: 'landing.descDebt' },
-  { id: 'emergency',     icon: '🆘', navKey: 'nav.emergency',     descKey: 'landing.descEmergency' },
-  { id: 'savings',       icon: '🎯', navKey: 'nav.savings',       descKey: 'landing.descSavings' },
-  { id: 'subscriptions', icon: '📱', navKey: 'nav.subscriptions', descKey: 'landing.descSubscriptions' },
-  { id: 'retirement',    icon: '🏦', navKey: 'nav.retirement',    descKey: 'landing.descRetirement' },
-  { id: 'amex',          icon: '⭐', navKey: 'nav.amex',          descKey: 'landing.descAmex' },
-  { id: 'cc',            icon: '💳', navKey: 'nav.cc',            descKey: 'landing.descCc' },
+  { id: 'car',           icon: '🚗', navKey: 'nav.car',           descKey: 'landing.descCar',           tag: 'Loans' },
+  { id: 'home',          icon: '🏠', navKey: 'nav.home',          descKey: 'landing.descHome',          tag: 'Loans' },
+  { id: 'personalLoan',  icon: '📋', navKey: 'nav.personalLoan',  descKey: 'landing.descPersonalLoan',  tag: 'Loans' },
+  { id: 'tax',           icon: '💼', navKey: 'nav.tax',           descKey: 'landing.descTax',           tag: 'Income' },
+  { id: 'military',      icon: '🎖', navKey: 'nav.military',      descKey: 'landing.descMilitary',      tag: 'Income' },
+  { id: 'budget',        icon: '📝', navKey: 'nav.budget',        descKey: 'landing.descBudget',        tag: 'Planning' },
+  { id: 'bills',         icon: '📅', navKey: 'nav.bills',         descKey: 'landing.descBills',         tag: 'Planning' },
+  { id: 'debt',          icon: '💳', navKey: 'nav.debt',          descKey: 'landing.descDebt',          tag: 'Planning' },
+  { id: 'emergency',     icon: '🆘', navKey: 'nav.emergency',     descKey: 'landing.descEmergency',     tag: 'Planning' },
+  { id: 'savings',       icon: '🎯', navKey: 'nav.savings',       descKey: 'landing.descSavings',       tag: 'Planning' },
+  { id: 'subscriptions', icon: '📱', navKey: 'nav.subscriptions', descKey: 'landing.descSubscriptions', tag: 'Planning' },
+  { id: 'retirement',    icon: '🏦', navKey: 'nav.retirement',    descKey: 'landing.descRetirement',    tag: 'Investments' },
+  { id: 'amex',          icon: '⭐', navKey: 'nav.amex',          descKey: 'landing.descAmex',          tag: 'Cards' },
+  { id: 'cc',            icon: '💳', navKey: 'nav.cc',            descKey: 'landing.descCc',            tag: 'Cards' },
 ];
 
 export default function Landing({ onNavigate }) {
@@ -80,6 +80,7 @@ export default function Landing({ onNavigate }) {
                 className="landing-tool-card"
                 onClick={() => onNavigate(tool.id)}
               >
+                {tool.tag && <span className="landing-tool-tag">{tool.tag}</span>}
                 <span className="landing-tool-icon">{tool.icon}</span>
                 <h3 className="landing-tool-name">{t(tool.navKey)}</h3>
                 <p className="landing-tool-desc">{t(tool.descKey)}</p>
